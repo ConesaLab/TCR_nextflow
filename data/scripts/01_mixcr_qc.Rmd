@@ -1,0 +1,277 @@
+---
+title: "01 - MiXCR quality control"
+author: "Teresa Rubio"
+date: "February, 2021"
+output:
+    html_document:
+      code_folding: hide
+      self_contained: true
+      keep_md: true
+params:
+    workDir: !r getwd()
+    outputDir: !r getwd()
+    articleDir: !r getwd()
+    sampleInfo: !r NULL
+    sampleLevels: !r NULL
+
+---
+
+```{r, setup, include=FALSE}
+knitr::opts_knit$set(root.dir = params$workDir, echo=TRUE)
+```
+
+# Packages
+```{r, message=FALSE}
+library(ggplot2)
+library(gridExtra)
+library(RColorBrewer)
+library(viridis)
+library(tibble)
+library(tidyr)
+```
+
+# Work enviroment
+```{r}
+# Define work/output directories
+# workDir <- "~/MHE_TCR/01_MiXCR"
+# outputDir <- "~/MHE_TCR/TCRanalysis_bookdown"
+# articleDir <- "~/MHE_TCR/TCRanalysis_articlefigures"
+sampleInfoFile <- params$sampleInfo
+levels <- params$sampleLevels
+
+#setwd(workDir)
+dir.create(params$outputDir, recursive=T)
+dir.create(params$articleDir, recursive=T)
+
+# Load sample info
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T)
+SampleInfo <- SampleInfo[order(nchar(SampleInfo$CRG.code), SampleInfo$CRG.code),]
+SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
+```
+
+Auxiliary function
+```{r}
+color <- function(x, palette=0, reverse=1, alpha=1){
+  library("viridis")
+  library(RColorBrewer)
+  if(palette==0)
+    return(c(viridis(x, direction=reverse, alpha = alpha)))
+  if(palette==1)
+    return(c(magma(x, direction=reverse, alpha = alpha)))
+  if(palette==2)
+    return(c(plasma(x, direction=reverse, alpha = alpha)))
+  if(palette==3)
+    return(c(inferno(x, direction=reverse, alpha = alpha)))
+  if(palette==4)
+    return(c(cividis(x, direction=reverse, alpha = alpha)))
+  if(palette==5)
+    return(c(rainbow(x)))
+  if(palette==6)
+    return(c(RColorBrewer::brewer.pal(x, "Set3")))
+}
+```
+
+# Alignment Report
+```{r}
+temp <- list.files(path=params$workDir, pattern="*report00")
+temp <- temp[order(nchar(temp), temp)]
+
+# Concatenate all reports in one
+alignment_reports <- setNames(do.call(cbind, lapply(temp, read.table, row.names = 1, sep=":",
+                                                   comment.char="=", skip = 6)),
+                              nm = SampleInfo$SampleID)
+
+# Remove (%) values
+alignment_reports <- apply(alignment_reports, 1, stringr::str_remove, pattern = " [(\\)].+")
+# Change to numeric
+alignment_reports <- apply(alignment_reports, 2, as.numeric)
+# Change CRG id by Clinic id
+rownames(alignment_reports) <- SampleInfo$SampleID
+
+# Order alphabetically + by group
+alignment_reports <- alignment_reports[order(SampleInfo$SampleID),]
+SampleInfo <- SampleInfo[order(SampleInfo$SampleID),]
+SampleInfo <- SampleInfo[order(SampleInfo$Group),]
+alignment_reports <- alignment_reports[SampleInfo$SampleID,]
+
+# Create alignment report table
+alignment_reports <- data.frame(alignment_reports, check.names = F)
+alignment_reports <- cbind(patientID = rownames(alignment_reports), alignment_reports)
+
+write.table(alignment_reports, file = file.path(params$outputDir, "01_alignment_reports.tsv"),
+            sep = "\t", row.names = F, col.names = T, quote = F)
+```
+
+
+## Plots
+```{r}
+df_matrix <- tibble::as_tibble(alignment_reports)
+
+# Plot
+patient_color <- c("#56B4E9", "red", "black")[factor(SampleInfo$Group)]
+df_matrix$patientID <- factor(df_matrix$patientID, levels=df_matrix$patientID)
+
+
+df_gather_chains <- tidyr::gather(data = df_matrix[,c(1,14:18,20,21)],
+                                  key = "parameter", value = "reads", -1)
+df_gather_chains$parameter <- factor(df_gather_chains$parameter,
+                                     levels = unique(df_gather_chains$parameter))
+colnames(df_gather_chains)[1] <- "patient"
+
+p1 <- ggplot(df_gather_chains,
+             aes(fill = parameter,
+                 y = reads,
+                 x = patient)) +
+      geom_bar(position="stack",
+               stat="identity") +
+      ggtitle("MiXCR alignment report") +
+      ylab("Number of reads") +
+      theme_light() +
+      theme(axis.text.x = element_text(angle = 90,
+                                       color = patient_color)) +
+      scale_fill_manual(values = color(length(unique(df_gather_chains$parameter)),
+                                       palette = 6))
+p1
+```
+
+```{r, results='hide'}
+# plots
+png(file.path(params$outputDir, "01_alignment_report.png"), width = 30, height = 15, units = "cm", res = 300)
+p1
+dev.off()
+```
+
+
+# Assemble report
+```{r}
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T)
+SampleInfo <- SampleInfo[order(nchar(SampleInfo$CRG.code), SampleInfo$CRG.code),]
+SampleInfo$Group <- factor(SampleInfo$Group, levels = c("control", "withoutMHE", "withMHE"))
+
+temp <- list.files(path=params$workDir, pattern="*report04")
+temp <- temp[order(nchar(temp), temp)]
+
+# Concatenate all reports in one
+assemble_reports <- setNames(do.call(cbind, lapply(temp, read.table, row.names = 1, sep=":",
+                                                  comment.char="=", skip = 7)),
+                             nm = SampleInfo$SampleID)
+
+# Remove (%) values
+assemble_reports <- apply(assemble_reports, 1, stringr::str_remove, pattern = " [(\\)].+")
+# Change to numeric
+assemble_reports <- apply(assemble_reports, 2, as.numeric)
+# Change CRG id by Clinic id
+rownames(assemble_reports) <- SampleInfo$SampleID
+
+# Order alphabetically + by group
+assemble_reports <- assemble_reports[order(SampleInfo$SampleID),]
+SampleInfo <- SampleInfo[order(SampleInfo$SampleID),]
+SampleInfo <- SampleInfo[order(SampleInfo$Group),]
+assemble_reports <- assemble_reports[SampleInfo$SampleID,]
+
+rownames(assemble_reports) == SampleInfo$SampleID
+
+# Create alignment report table
+assemble_reports <- data.frame(assemble_reports, check.names = F)
+assemble_reports <- cbind(patientID = rownames(assemble_reports), assemble_reports)
+
+write.table(assemble_reports, file = file.path(params$outputDir, "01_assemble_reports.tsv"),
+            sep = "\t", row.names = F, col.names = T, quote = F)
+```
+
+## Plots
+```{r}
+df_matrix_assemble <- data.frame(assemble_reports, check.names = F)
+df_matrix_assemble[,"patient"] <- rownames(df_matrix_assemble)
+df_matrix_assemble <- df_matrix_assemble[c(ncol(df_matrix_assemble),1:ncol(df_matrix_assemble)-1)]
+df_matrix_assemble <- tibble::as_tibble(df_matrix_assemble)
+
+# Plot
+patient_color <- c("#56B4E9", "red", "black")[factor(SampleInfo$Group)]
+df_matrix_assemble$patient <- factor(df_matrix_assemble$patient, levels=df_matrix_assemble$patient)
+
+
+df_gather_chains <- tidyr::gather(data = df_matrix_assemble[,c(1,18:24)],
+                                  key = "parameter", value = "reads", -1)
+df_gather_chains$parameter <- factor(df_gather_chains$parameter,
+                                     levels = unique(df_gather_chains$parameter))
+
+p2 <- ggplot(df_gather_chains,
+             aes(fill = parameter,
+                 y = reads,
+                 x = patient)) +
+      geom_bar(position="stack",
+               stat="identity") +
+      ggtitle("MiXCR assemble report") +
+      ylab("Number of clonotypes") +
+      theme_light() +
+      theme(axis.text.x = element_text(angle = 90,
+                                       color = patient_color)) +
+      scale_fill_manual(values = color(length(unique(df_gather_chains$parameter)),
+                                       palette = 6))
+p2
+```
+
+```{r, results='hide'}
+# plots
+png(file.path(params$outputDir, "01_assemble_report.png"), width = 30, height = 15, units = "cm", res = 300)
+p2
+dev.off()
+```
+
+
+
+
+## % of aligned reads
+```{r}
+align <- read.csv(file.path(params$outputDir, "01_alignment_reports.tsv"), header = T, sep = "\t")
+align <- align[align$patientID %in% SampleInfo$SampleID,]
+
+# global %
+align$Successfully.aligned.reads / sum(align$Successfully.aligned.reads) *100
+
+# TCR %
+tcr <- align[,c("TRA.chains", "TRB.chains", "TRD.chains", "TRG.chains")]
+rowSums(tcr) / align$Successfully.aligned.reads *100
+round(sort(rowSums(tcr) / align$Successfully.aligned.reads *100), 1)
+
+# BCR %
+bcr <- align[,c("IGH.chains", "IGK.chains", "IGL.chains")]
+rowSums(bcr) / align$Successfully.aligned.reads *100
+round(sort(rowSums(bcr) / align$Successfully.aligned.reads *100), 1)
+```
+
+
+## % of assembled clones
+```{r}
+assemble <- read.csv(file.path(params$outputDir, "01_assemble_reports.tsv"), header = T, sep = "\t")
+assemble <- assemble[assemble$patientID %in% SampleInfo$SampleID,]
+
+# global %
+assemble$Final.clonotype.count / sum(assemble$Final.clonotype.count) *100
+
+# TCR %
+tcr <- assemble[,c("TRA.chains", "TRB.chains", "TRD.chains", "TRG.chains")]
+rowSums(tcr) / assemble$Final.clonotype.count *100
+round(sort(rowSums(tcr) / assemble$Final.clonotype.count *100), 1)
+
+# TRA & TRB %
+trab <- assemble[,c("TRA.chains", "TRB.chains")]
+rowSums(trab) / assemble$Final.clonotype.count *100
+round(sort(rowSums(trab) / assemble$Final.clonotype.count *100), 1)
+
+# BCR %
+bcr <- assemble[,c("IGH.chains", "IGK.chains", "IGL.chains")]
+rowSums(bcr) / assemble$Final.clonotype.count *100
+round(sort(rowSums(bcr) / assemble$Final.clonotype.count *100), 1)
+```
+
+# Article Figures
+```{r Supplementary_Figure1B.png, results='show', message=FALSE, warning=FALSE, fig.height=30, fig.width=30, fig.path=file.path(params$workDir, params$articleDir,""), dev='png', dpi=300}
+# Supplementary Figure 1B
+#png(filename=file.path(params$articleDir, "Supplementary_Figure1B.png"), height = 30, width = 30, units = "cm", res = 300)
+grid.arrange(p1,
+             p2,
+             ncol=1)
+#dev.off()
+```

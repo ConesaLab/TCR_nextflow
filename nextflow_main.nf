@@ -1,91 +1,132 @@
 #!/usr/bin/env nextflow
 
-/*
- * Defines some parameters in order to specify the read pairs,
- * data information and TCR databases by using the command line options
- */
-params.reads = "$baseDir/data/reads/*{1,2}.fastq.gz"
-params.mcpas = "$baseDir/data/ddbb/McPAS-TRB_human.csv"
-params.vdjdb = "$baseDir/data/ddbb/VDJdb-TRB_human.tsv"
-params.outdir = 'results'
-
-READFILES = params.readfiles
-BASENAME  = params.bn
-
+nextflow.enable.dsl=2
 
 log.info """\
 RNASeq - TCR Pipeline
 ===================================
 Project parameters:
-- BASENAME              : ${BASENAME}
-- MANIFEST              : ${READFILES}
+- BASENAME              : ${params.bn}
+- MANIFEST              : ${params.readfiles}
   """
 
-/*
- * Create a channel that emits tuples containing three elements:
- * the SampleID, the first read-pair file and the second read-pair file
- */
-
-Channel
-    .fromPath( "$READFILES" )
-    .splitCsv(header:true)
-    .map { row -> tuple (row.SampleID,
-        file(row.R1),
-        file(row.R2))}
-    .into { samples_channel; samples_channel_2 }
-
 
 /*
-* Step 1. TCR quantification using MiXCR
+* Step 1.1. TCR quantification using MiXCR
 */
 process mixcr_analyze {
 
-    publishDir "$params.outdir"
+    tag "$SampleID"
+    label "mixcr"
+    label "all_cpu"
+    cache 'lenient'
+
+    publishDir "$params.outdir/01_MiXCR",
+        mode: 'copy',
+        overwrite: true
 
     input:
-    set SampleID, file(R1), file(R2) from samples_channel
+    tuple val(SampleID), file(R1), file(R2)
 
     output:
-    file "${SampleID}.clonotypes.ALL.txt" into all_clonotypes
-    file "${SampleID}.report" into full_report
+    path("${SampleID}.clonotypes.ALL.txt"), emit: all_clonotypes
+    path("${SampleID}.report"), emit: full_report
+    path("${SampleID}.report0[0-4]"), emit: full_report_chunks
 
     script:
     """
-    mixcr analyze shotgun -t 3 --species hs --starting-material rna --only-productive \
-    $baseDir/data/reads/${R1} $baseDir/data/reads/${R2} ${SampleID}
+    mixcr analyze shotgun -t $task.cpus --species hs --starting-material rna --only-productive \
+    ${R1} ${R2} ${SampleID}
+    csplit -f ${SampleID}.report ${SampleID}.report '/^==/' '{*}' > mixcr_qc.log
+    """
+}
+
+/*
+* Step 1.2. MiXCR quality control
+*/
+process mixcr_qc {
+
+    cpus 1
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/01_MiXCR",
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(report)
+    path(sampleInfo)
+
+    output:
+    path("*.html"), emit: qc_report
+    path(TCRanalysis_articlefigures)
+    path(TCRanalysis_bookdown)
+
+    script:
+    // TODO: parametrize sampleLevels
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/01_mixcr_qc.Rmd', \
+    params=list('workDir'=here, \
+    'outputDir'='TCRanalysis_bookdown', \
+    'articleDir'='TCRanalysis_articlefigures', \
+    'sampleInfo'='${sampleInfo}', \
+    'sampleLevels'=c('control', 'withoutMHE', 'withMHE')), \
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 2. Data filtering
+*/
+process data_filtering {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/02_DataFiltering",
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(report)
+    path(sampleInfo)
+
+    output:
+    path("*.html"), emit: qc_report
+    path(TCRanalysis_bookdown)
+    // TODO: parametrize levels
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd', \
+    params=list( \
+        'inputDir'=here, \
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
+        'sampleInfo'='${sampleInfo}',
+        'sampleLevels'=c('control', 'withoutMHE', 'withMHE')), \
+        'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
 
 
-/*
-* Step 2. MiXCR quality control
+workflow {
 
-* process mixcr_qc {
+   Channel.fromPath("${params.readfiles}")
+            .ifEmpty { exit 1, "File not foud: ${params.readfiles}" }
+            .set { sampleInfoChannel }
 
-*      input:
-*      env report from full_report
+   /*
+   * Create a channel that emits tuples containing three elements:
+   * the SampleID, the first read-pair file and the second read-pair file
+   */
+    samples_channel = sampleInfoChannel
+        .splitCsv(header:true)
+        .map { row -> tuple (row.SampleID,
+        file(row.R1),
+        file(row.R2))}
 
-*      script:
-*      """
-*      for file in ${full_report}; do
-*         csplit -f \$file \$file '/^==/' '{*}'
-*         rm "*.report05"
-*     done
-*      """
-*  }
-*/
+    mixcr_analyze(samples_channel)
 
-/*
-* Step 3. Diversity Analysis
-*
-*process diversity {
+    mixcr_qc(mixcr_analyze.out.full_report_chunks.collect(), sampleInfoChannel)
 
-*      input:
-*      env report from full_report
-
-*      script:
-*      """
-*      Rscript data/scripts/02_datafiltering_evenness.Rmd
-*      """
-*  }
-*/
+    data_filtering(mixcr_analyze.out.all_clonotypes.collect(), sampleInfoChannel)
+}

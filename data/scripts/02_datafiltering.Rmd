@@ -1,0 +1,249 @@
+---
+title: "02 - Data Filtering and Evenness calculation"
+author: "Teresa Rubio"
+date: "February, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+  sampleLevels: !r NULL
+---
+
+# Packages
+```{r, message=FALSE}
+library(vegan)
+library(microbiome)
+```
+
+# Work enviroment
+```{r}
+# Define input/work/output directories
+#inputDir <- "~/MHE_TCR/01_MiXCR"
+#workDir <- "~/MHE_TCR/02_DataFiltering"
+#outputDir <- "~/MHE_TCR/TCRanalysis_bookdown"
+
+dir.create(params$outputDir, recursive=T)
+
+sampleInfoFile <- params$sampleInfo
+levels <- params$sampleLevels
+
+#setwd(workDir)
+
+save(params, file="params.RData")
+
+# Load sample info
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T)
+SampleInfo <- SampleInfo[order(nchar(SampleInfo$CRG.code), SampleInfo$CRG.code),]
+SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
+
+SampleInfo_ordered <- SampleInfo[order(SampleInfo$SampleID),]
+SampleInfo_ordered <- SampleInfo_ordered[order(SampleInfo_ordered$Group),]
+```
+
+# Clones from mixcr output
+Clones were included in the analysis if they had a minimal abundance read of 2 read counts (thus avoiding singletones) and their CDR3βs were of 4 amino acids minimum length. Additionally, mixcr output contained BCR+TCR clones and we exclude everything that is not TCR (keeping TRA+TRB+TRG+TRD).
+
+Three types of clones are calculated:
+
+* TCRclones: TRA+TRB+TRG+TRD chains
+* TRAclones: TRA chain
+* TRBclones: TRB chain
+
+## TCR clonotypes
+```{r}
+# List input files
+files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt", full.names = T)
+files <- files[order(nchar(files), files)]
+files <- files[SampleInfo_ordered$files_order]
+
+# Create a list of clone tables
+clonotypes_all <- setNames(lapply(files, read.delim), nm = SampleInfo_ordered$SampleID)
+
+# Exclude everything that is not TCR
+clonotypes_tcr <- lapply(clonotypes_all, function(i){
+  i = i[-grep("IG", i$allVHitsWithScore),]
+  })
+
+# Summary of filter criteria
+summary_table_tcr <- do.call(rbind, lapply(names(clonotypes_tcr), function(i){
+  table = clonotypes_tcr[[i]]
+  sample = i
+  TCRclones = nrow(table)
+  filterby_readcount = nrow(table[table$cloneCount >= 2,])
+  min_CDR3aa = min(nchar(clonotypes_tcr[[i]]$aaSeqCDR3))
+  filterby_CDR3aa = nrow(table[nchar(table$aaSeqCDR3) >= 4,])
+  filterby_both = nrow(table[table$cloneCount >= 2 & nchar(table$aaSeqCDR3) >= 4,])
+  cbind(sample,TCRclones,filterby_readcount,min_CDR3aa,filterby_CDR3aa,filterby_both)
+  }))
+
+# Filtering and output
+clones_TCR_filtered <- lapply(clonotypes_tcr, function(i){
+  # Filters
+  i = i[i$cloneCount >= 2,]
+  i = i[i$aaSeqCDR3 >= 4,]
+  # Recalculate clone Fraction, thus sum(recalculatedcloneFraction) = 1
+  recalculatedcloneFraction = microbiome::transform(i[,"cloneCount",drop=F], "compositional")
+  colnames(recalculatedcloneFraction) = "recalculatedcloneFraction"
+  cbind(i, recalculatedcloneFraction)
+})
+
+save(clones_TCR_filtered, file = file.path(params$workDir, "clones_TCR_filtered.Rda"))
+```
+
+## TRA clonotypes
+```{r}
+# List input files
+files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt", full.names = T)
+files <- files[order(nchar(files), files)]
+files <- files[SampleInfo_ordered$files_order]
+
+# Create a list of clone tables
+clonotypes_all <- setNames(lapply(files, read.delim), nm = SampleInfo_ordered$SampleID)
+
+# Exclude everything that is not TRA
+clonotypes_TRA <- lapply(clonotypes_all, function(i){
+  i = i[grep("TRA", i$allVHitsWithScore),]
+  })
+
+# Summary of filter criteria
+summary_table_TRA <- do.call(rbind, lapply(names(clonotypes_TRA), function(i){
+  table = clonotypes_TRA[[i]]
+  sample = i
+  TRAclones = nrow(table)
+  filterby_readcount = nrow(table[table$cloneCount >= 2,])
+  min_CDR3aa = min(nchar(clonotypes_TRA[[i]]$aaSeqCDR3))
+  filterby_CDR3aa = nrow(table[nchar(table$aaSeqCDR3) >= 4,])
+  filterby_both = nrow(table[table$cloneCount >= 2 & nchar(table$aaSeqCDR3) >= 4,])
+  cbind(sample,TRAclones,filterby_readcount,min_CDR3aa,filterby_CDR3aa,filterby_both)
+  }))
+
+# Filtering and output
+clones_TRA_filtered <- lapply(clonotypes_TRA, function(i){
+  # Filters
+  i = i[i$cloneCount >= 2,]
+  i = i[i$aaSeqCDR3 >= 4,]
+  # Recalculate clone Fraction
+  recalculatedcloneFraction = microbiome::transform(i[,"cloneCount",drop=F], "compositional")
+  if (nrow(i)>0){
+    colnames(recalculatedcloneFraction) = "recalculatedcloneFraction"
+  }
+  cbind(i, recalculatedcloneFraction)
+})
+
+save(clones_TRA_filtered, file = file.path(params$workDir, "clones_TRA_filtered.Rda"))
+```
+
+## TRB clonotypes
+```{r}
+# List input files
+files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt", full.names = T)
+files <- files[order(nchar(files), files)]
+files <- files[SampleInfo_ordered$files_order]
+
+# Create a list of clone tables
+clonotypes_all <- setNames(lapply(files, read.delim), nm = SampleInfo_ordered$SampleID)
+
+# Exclude everything that is not TRB
+clonotypes_TRB <- lapply(clonotypes_all, function(i){
+  i = i[grep("TRB", i$allVHitsWithScore),]
+  })
+
+# Summary of filter criteria
+summary_table_TRB <- do.call(rbind, lapply(names(clonotypes_TRB), function(i){
+  table = clonotypes_TRB[[i]]
+  sample = i
+  TRBclones = nrow(table)
+  filterby_readcount = nrow(table[table$cloneCount >= 2,])
+  min_CDR3aa = min(nchar(clonotypes_TRB[[i]]$aaSeqCDR3))
+  filterby_CDR3aa = nrow(table[nchar(table$aaSeqCDR3) >= 4,])
+  filterby_both = nrow(table[table$cloneCount >= 2 & nchar(table$aaSeqCDR3) >= 4,])
+  cbind(sample,TRBclones,filterby_readcount,min_CDR3aa,filterby_CDR3aa,filterby_both)
+  }))
+
+# Filtering and output
+clones_TRB_filtered <- lapply(clonotypes_TRB, function(i){
+  # Filters
+  i = i[i$cloneCount >= 2,]
+  i = i[i$aaSeqCDR3 >= 4,]
+  # Recalculate clone Fraction
+  recalculatedcloneFraction = microbiome::transform(i[,"cloneCount",drop=F], "compositional")
+  colnames(recalculatedcloneFraction) = "recalculatedcloneFraction"
+  cbind(i, recalculatedcloneFraction)
+})
+
+save(clones_TRB_filtered, file = file.path(params$workDir, "clones_TRB_filtered.Rda"))
+```
+
+
+# Shannon Evenness (SE)
+## TCR - SE
+```{r}
+TCR_SE <- do.call(rbind, lapply(clones_TCR_filtered, function(x){
+  diversity = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 1))
+  richness = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 0))
+  SE = diversity/richness
+  }))
+colnames(TCR_SE) <- "shannon"
+```
+
+## TRA - SE
+```{r}
+TRA_SE <- do.call(rbind, lapply(clones_TRA_filtered, function(x){
+  diversity = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 1))
+  richness = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 0))
+  SE = diversity/richness
+  }))
+colnames(TRA_SE) <- "shannon"
+```
+
+## TRB - SE
+```{r}
+TRB_SE <- do.call(rbind, lapply(clones_TRB_filtered, function(x){
+  diversity = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 1))
+  richness = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 0))
+  SE = diversity/richness
+  }))
+colnames(TRB_SE) <- "shannon"
+```
+
+# Output files
+```{r, results='hide', warning=FALSE}
+# Summary table
+summary_table_tcr <- cbind(summary_table_tcr, TCR_SE)
+summary_table_TRA <- cbind(summary_table_TRA, TRA_SE)
+summary_table_TRB <- cbind(summary_table_TRB, TRB_SE)
+
+write.table(summary_table_tcr, file = file.path(params$outputDir, "02_filtering&evenness_summarytable_TCR.csv"),
+            sep = "\t", row.names = F, col.names = T, quote = F)
+write.table(summary_table_TRA, file = file.path(params$outputDir, "02_filtering&evenness_summarytable_TRA.csv"),
+            sep = "\t", row.names = F, col.names = T, quote = F)
+write.table(summary_table_TRB, file = file.path(params$outputDir, "02_filtering&evenness_summarytable_TRB.csv"),
+            sep = "\t", row.names = F, col.names = T, quote = F)
+
+# Filtered files
+dir.create("clones_TCR_filtered")
+dir.create("clones_TRA_filtered")
+dir.create("clones_TRB_filtered")
+
+lapply(names(clones_TCR_filtered), function(x){
+  write.table(clones_TCR_filtered[[x]],
+              file = file.path(params$workDir, "clones_TCR_filtered", paste0(x, ".txt")),
+              quote = F, sep = "\t", row.names = F)
+})
+
+lapply(names(clones_TRA_filtered), function(x){
+  write.table(clones_TRA_filtered[[x]],
+              file = file.path(params$workDir, "clones_TRA_filtered", paste0(x, ".txt")),
+              quote = F, sep = "\t", row.names = F)
+})
+
+lapply(names(clones_TRB_filtered), function(x){
+  write.table(clones_TRB_filtered[[x]],
+              file = file.path(params$workDir, "clones_TRB_filtered", paste0(x, ".txt")),
+              quote = F, sep = "\t", row.names = F)
+})
+```
