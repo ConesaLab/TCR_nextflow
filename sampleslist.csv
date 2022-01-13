@@ -1,2 +1,3 @@
-SampleID,R1,R2
-CD-1,CD-1_read1.fastq.gz,CD-1_read2.fastq.gz
+SampleID,R1,R2,Group,CellNumber,files_order,RIN,total RNA (ng),CRG code,ReadPairsNumber
+CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,control,997312,1,8.9,280.8,CD-1,71552850
+Copy-of-CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,control,997312,1,8.9,280.8,Copy-of-CD-1,71552850
