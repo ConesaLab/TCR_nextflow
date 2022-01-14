@@ -17,7 +17,7 @@ params:
 ---
 
 ```{r, setup, include=FALSE}
-knitr::opts_knit$set(root.dir = params$workDir, echo=TRUE)
+knitr::opts_knit$set(root.dir = params$workDir, echo=TRUE, dev=c('png','pdf'))
 ```
 
 # Packages
@@ -267,7 +267,7 @@ round(sort(rowSums(bcr) / assemble$Final.clonotype.count *100), 1)
 ```
 
 # Article Figures
-```{r Supplementary_Figure1B.png, results='show', message=FALSE, warning=FALSE, fig.height=30, fig.width=30, fig.path=file.path(params$workDir, params$articleDir,""), dev='png', dpi=300}
+```{r Supplementary_Figure1B.png, results='show', message=FALSE, warning=FALSE, fig.height=30, fig.width=30, fig.path=file.path(params$workDir, params$articleDir,""), dev=c('png','pdf'), dpi=300}
 # Supplementary Figure 1B
 #png(filename=file.path(params$articleDir, "Supplementary_Figure1B.png"), height = 30, width = 30, units = "cm", res = 300)
 grid.arrange(p1,
