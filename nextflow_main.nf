@@ -18,8 +18,6 @@ process mixcr_analyze {
 
     tag "$SampleID"
     label "mixcr"
-    label "all_cpu"
-    cache 'lenient'
 
     publishDir "$params.outdir/01_MiXCR",
         mode: 'copy',
@@ -50,6 +48,13 @@ process mixcr_qc {
     label 'mhecd4tcr'
 
     publishDir "$params.outdir/01_MiXCR",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
         mode: 'copy',
         overwrite: true
 
@@ -60,7 +65,7 @@ process mixcr_qc {
     output:
     path("*.html"), emit: qc_report
     path(TCRanalysis_articlefigures)
-    path(TCRanalysis_bookdown)
+    path("TCRanalysis_bookdown/*")
 
     script:
     // TODO: parametrize sampleLevels
@@ -83,6 +88,13 @@ process data_filtering {
     label 'mhecd4tcr'
 
     publishDir "$params.outdir/02_DataFiltering",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
         mode: 'copy',
         overwrite: true
 
@@ -92,7 +104,8 @@ process data_filtering {
 
     output:
     path("*.html"), emit: qc_report
-    path(TCRanalysis_bookdown)
+    path("clones_*")
+    path("TCRanalysis_bookdown/*")
     // TODO: parametrize levels
     script:
     """
