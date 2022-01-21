@@ -101,7 +101,7 @@ process data_filtering {
 
     output:
     path("*.html")
-    path("clones_*")
+    path("clones_*"), emit: filt_clones
     path("TCRanalysis_bookdown/*"), emit: filt_bookdown
     
     script:
@@ -195,6 +195,85 @@ process correlations {
     """
 }
 
+/*
+* Step 5. Overlap
+*/
+process overlap {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/05_Overlap",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*")
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/05_overlap.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 6. Diversity
+*/
+process diversity {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/06_Diversity",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)5
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*")
+    
+    //TODO: fix NMF package in Docker
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
 workflow {
 
    Channel.fromPath("${params.readfiles}")
@@ -221,5 +300,8 @@ workflow {
 
     correlations(dataset_overview.out.overview_bookdown.collect(), sampleInfoChannel)
 
+    overlap(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
+
+    diversity(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
 }
