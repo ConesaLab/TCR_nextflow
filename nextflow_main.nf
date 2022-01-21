@@ -196,7 +196,7 @@ process correlations {
 }
 
 /*
-* Step 5. Overlap
+* Step 5. Overlap analysis
 */
 process overlap {
 
@@ -235,7 +235,7 @@ process overlap {
 }
 
 /*
-* Step 6. Diversity
+* Step 6. Diversity analysis
 */
 process diversity {
 
@@ -254,7 +254,7 @@ process diversity {
 
     input:
     path(inputDir)
-    path(sampleInfo)5
+    path(sampleInfo)
 
     output:
     path("*.html")
@@ -264,6 +264,46 @@ process diversity {
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 7. K-mers analysis
+*/
+process kmers {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/07_Kmers",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*")
+    
+    //TODO: fix NMF package in Docker
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/07_kmers.Rmd', 
     params=list(
         'inputDir'=here, 
         'workDir'=here, 
@@ -290,6 +330,9 @@ workflow {
         file(row.R1),
         file(row.R2))}
 
+    /*
+    * Workflow functions
+    */
     mixcr_analyze(samples_channel)
 
     mixcr_qc(mixcr_analyze.out.full_report_chunks.collect(), sampleInfoChannel)
@@ -303,5 +346,8 @@ workflow {
     overlap(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
     diversity(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
+
+    kmers(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
+
 
 }
