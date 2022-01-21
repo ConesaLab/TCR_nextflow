@@ -141,6 +141,7 @@ process dataset_overview {
 
     output:
     path("*.html")
+    path("03_*Rda")
     path("TCRanalysis_bookdown/*"), emit: overview_bookdown
     
     script:
@@ -180,6 +181,7 @@ process correlations {
 
     output:
     path("*.html")
+    path("04_*Rda")
     path("TCRanalysis_bookdown/*"), emit: corr_bookdown
     
     script:
@@ -219,6 +221,7 @@ process overlap {
 
     output:
     path("*.html")
+    path("05_*Rda")
     path("TCRanalysis_bookdown/*")
     
     script:
@@ -258,6 +261,7 @@ process diversity {
 
     output:
     path("*.html")
+    path("06_*Rda")
     path("TCRanalysis_bookdown/*")
     
     //TODO: fix NMF package in Docker
@@ -298,6 +302,7 @@ process kmers {
 
     output:
     path("*.html")
+    path("07_*Rda")
     path("TCRanalysis_bookdown/*")
     
     //TODO: fix NMF package in Docker
@@ -338,6 +343,7 @@ process network {
 
     output:
     path("*.html")
+    path("08_*Rda")
     path("TCRanalysis_bookdown/*")
     
     //TODO: fix NMF package in Docker
