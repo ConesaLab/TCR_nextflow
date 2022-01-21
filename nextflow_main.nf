@@ -59,23 +59,20 @@ process mixcr_qc {
         overwrite: true
 
     input:
-    path(report)
+    path(inputDir)
     path(sampleInfo)
 
     output:
-    path("*.html"), emit: qc_report
-    path(TCRanalysis_articlefigures)
-    path("TCRanalysis_bookdown/*")
+    path("*.html")
+    path("TCRanalysis_bookdown/*"), emit: qc_bookdown
 
     script:
-    // TODO: parametrize sampleLevels
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/01_mixcr_qc.Rmd', \
-    params=list('workDir'=here, \
-    'outputDir'='TCRanalysis_bookdown', \
-    'articleDir'='TCRanalysis_articlefigures', \
-    'sampleInfo'='${sampleInfo}', \
-    'sampleLevels'=c('control', 'withoutMHE', 'withMHE')), \
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/01_mixcr_qc.Rmd',
+    params=list(
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
+        'sampleInfo'='${sampleInfo}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -99,27 +96,104 @@ process data_filtering {
         overwrite: true
 
     input:
-    path(report)
+    path(inputDir)
     path(sampleInfo)
 
     output:
-    path("*.html"), emit: qc_report
+    path("*.html")
     path("clones_*")
-    path("TCRanalysis_bookdown/*")
-    // TODO: parametrize levels
+    path("TCRanalysis_bookdown/*"), emit: filt_bookdown
+    
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd', \
-    params=list( \
-        'inputDir'=here, \
-        'workDir'=here,
-        'outputDir'='TCRanalysis_bookdown',
-        'sampleInfo'='${sampleInfo}',
-        'sampleLevels'=c('control', 'withoutMHE', 'withMHE')), \
-        'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
 
+/*
+* Step 3. Dataset overview
+*/
+process dataset_overview {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/03_DatasetOverview",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir1)
+    path(inputDir2)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*"), emit: overview_bookdown
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/03_dataset_overview.Rmd',
+    params=list(
+        'inputDir1'=here,
+        'inputDir2'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
+        'sampleInfo'='${sampleInfo}'),
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 4. Correlations
+*/
+process correlations {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/04_Correlations",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*"), emit: corr_bookdown
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/04_correlations.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
 
 workflow {
 
@@ -142,4 +216,10 @@ workflow {
     mixcr_qc(mixcr_analyze.out.full_report_chunks.collect(), sampleInfoChannel)
 
     data_filtering(mixcr_analyze.out.all_clonotypes.collect(), sampleInfoChannel)
+
+    dataset_overview(mixcr_qc.out.qc_bookdown.collect(), data_filtering.out.filt_bookdown.collect(), sampleInfoChannel)
+
+    correlations(dataset_overview.out.overview_bookdown.collect(), sampleInfoChannel)
+
+
 }
