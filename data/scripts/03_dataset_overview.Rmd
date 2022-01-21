@@ -1,0 +1,513 @@
+---
+title: "03 - Dataset Overview"
+author: "Teresa Rubio"
+date: "February, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir1: !r getwd()
+  inputDir2: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+---
+
+# Packages
+```{r, message=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(ggpubr)
+```
+
+# Work enviroment
+```{r}
+# Define input/work/output directories
+sampleInfoFile <- params$sampleInfo
+dir.create(params$outputDir, recursive=T)
+
+# Load sample info
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T, check.names = F)
+levels <- unique(SampleInfo$Group)
+SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
+
+# Color palette for sample groups
+cbPalette <- c("#56B4E9","#CB181D","#000000","#CC79A7","#db6d00","#009E73",
+               "#006ddb","#b66dff","#924900","#490092","#999999","#F0E442")
+```
+
+# Dataset Overview
+Dataset overview is the bias detection in several repertoire characteristics: number of cells, RNA amount, RNA quality, reads, clones and Shannon evenness.
+
+
+## Number of cells
+The number of cells were count with the sorter machine when we isolated CD4 cells.
+We represent boxplots by group and performed Kruskal-Wallis test to detect possible bias.
+```{r, warning=FALSE}
+my_comparisons <- combn(levels, m = 2, simplify = F)
+
+# Kruskal-Wallis test
+p1_ncell <- ggboxplot(SampleInfo,
+                      x = "Group",
+                      y = "CellNumber",
+                      fill = "cadetblue1",
+                      alpha = 0.5,
+                      show.legend = FALSE,
+                      add = "jitter") +
+            theme(legend.position = "none",
+                  text = element_text(size=20)) +
+            stat_compare_means(comparisons = my_comparisons,
+                               method = "wilcox.test",
+                               size = 7) +
+            stat_compare_means(method = "kruskal",
+                               label.y = 1500000,
+                               size = 7)
+
+# plots
+p1_ncell
+```
+
+### Final plot
+This is the final plot to include in the report:
+```{r, results='hide'}
+# plots
+png(file.path(params$outputDir, "03_boxplot1_ncell.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_ncell
+dev.off()
+```
+
+
+## RNA amount
+The RNA amount was measured in the RNA extraction step.
+```{r}
+# Kruskal-Wallis test
+p1_totalRNA <- ggboxplot(SampleInfo,
+                      x = "Group",
+                      y = "totalRNA",
+                      fill = "blueviolet",
+                      alpha = 0.2,
+                      add = "jitter") +
+            theme(legend.position = "none",
+                  text = element_text(size=20)) +
+            stat_compare_means(comparisons = my_comparisons,
+                               method = "wilcox.test",
+                               size = 7) +
+            stat_compare_means(method = "kruskal",
+                               label.y = 1300,
+                               size = 7)
+
+# plots
+p1_totalRNA
+```
+
+### Final plot
+This is the final plot to include in the report:
+```{r, results='hide'}
+# plots
+png(file.path(params$outputDir, "03_boxplot2_rnaquant.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_totalRNA
+dev.off()
+```
+
+
+## RNA quality
+The RNA quality (RIN) was measured in the RNA extraction step.
+```{r, warning=FALSE}
+# Kruskal-Wallis test
+p1_RNArin <- ggboxplot(SampleInfo,
+                       x = "Group",
+                       y = "RIN",
+                       fill = "burlywood1",
+                       alpha = 0.2,
+                       add = "jitter") +
+             theme(legend.position = "none",
+                   text = element_text(size=20)) +
+             stat_compare_means(comparisons = my_comparisons,
+                                method = "wilcox.test",
+                                size = 7) +
+             stat_compare_means(method = "kruskal",
+                                label.y = 11,
+                               size = 7)
+
+# plots
+p1_RNArin
+```
+
+### Final plot
+This is the final plot to include in the report:
+```{r, results='hide'}
+# plots
+png(file.path(params$outputDir, "03_boxplot3_rnaqual.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_RNArin
+dev.off()
+```
+
+## Reads
+### RNA-seq reads
+The number of reads in the complete RNA-seq dataset is represented.
+```{r}
+# Kruskal-Wallis test
+p1_reads <- ggboxplot(SampleInfo,
+                      x = "Group",
+                      y = "NumReads",
+                      color = "Group",
+                      palette = cbPalette,
+                      add = "jitter") +
+            theme(legend.position = "none",
+                  text = element_text(size=20)) +
+            stat_compare_means(comparisons = my_comparisons,
+                               method = "wilcox.test") +
+            stat_compare_means(method = "kruskal",
+                               label.y = 77011995)
+
+# plots
+p1_reads
+```
+
+### TCR reads
+Here we represent the successfully aligned reads to TCR that mixcr found.
+```{r}
+# Calculating all TCR reads (TRA+TRB+TRD+TRG)
+alignment_reports <- read.delim("01_alignment_reports.tsv")
+TCR_reads <- alignment_reports[,c("patientID",
+                                  "Total.sequencing.reads",
+                                  "TRA.chains",
+                                  "TRB.chains",
+                                  "TRD.chains",
+                                  "TRG.chains")]
+TCR_reads$TCRreads <- rowSums(TCR_reads[,3:ncol(TCR_reads)])
+
+# Add one column to SampleInfo
+SampleInfo <- merge(SampleInfo, TCR_reads[,c("patientID", "TCRreads")],
+                    by.x = "SampleID", by.y = "patientID", sort = F)
+
+# Kruskal-Wallis test
+p1_readsTCR <- ggboxplot(SampleInfo,
+                         x = "Group",
+                         y = "TCRreads",
+                         fill = "pink",
+                         alpha = 0.5,
+                         add = "jitter") +
+               theme(legend.position = "none",
+                     text = element_text(size=20)) +
+               stat_compare_means(comparisons = my_comparisons,
+                                  method = "wilcox.test") +
+               stat_compare_means(method = "kruskal",
+                                  label.y = 40000)
+
+# plots
+p1_readsTCR
+```
+
+### TRA reads
+Here we represent the successfully aligned reads to TCA (alpha chain) that mixcr found.
+```{r}
+# Calculating all TRA reads
+TRA_reads <- alignment_reports[,c("patientID", "TRA.chains")]
+colnames(TRA_reads)[2] <- "TRAreads"
+
+# Add one column to SampleInfo
+SampleInfo <- merge(SampleInfo, TRA_reads[,c("patientID", "TRAreads")],
+                    by.x = "SampleID", by.y = "patientID", sort = F)
+
+# Kruskal-Wallis test
+p1_readsTRA <- ggboxplot(SampleInfo,
+                         x = "Group",
+                         y = "TRAreads",
+                         fill = "pink",
+                         alpha = 0.5,
+                         add = "jitter") +
+               theme(legend.position = "none",
+                     text = element_text(size=20)) +
+               stat_compare_means(comparisons = my_comparisons,
+                                  method = "wilcox.test") +
+               stat_compare_means(method = "kruskal",
+                                  label.y = 14000)
+
+# plots
+p1_readsTRA
+```
+
+### TRB reads
+Here we represent the successfully aligned reads to TRB (beta chain) that mixcr found.
+```{r}
+# Calculating all TRB reads
+TRB_reads <- alignment_reports[,c("patientID", "TRB.chains")]
+colnames(TRB_reads)[2] <- "TRBreads"
+
+# Add one column to SampleInfo
+SampleInfo <- merge(SampleInfo, TRB_reads[,c("patientID", "TRBreads")],
+                    by.x = "SampleID", by.y = "patientID", sort = F)
+
+# Kruskal-Wallis test
+p1_readsTRB <- ggboxplot(SampleInfo,
+                         x = "Group",
+                         y = "TRBreads",
+                         fill = "pink",
+                         alpha = 0.5,
+                         add = "jitter") +
+                theme(legend.position = "none",
+                      text = element_text(size=20)) +
+                stat_compare_means(comparisons = my_comparisons,
+                                   method = "wilcox.test") +
+                stat_compare_means(method = "kruskal",
+                                   label.y = 30000)
+
+# plots
+p1_readsTRB
+```
+
+### Final plot
+Final plots of the number of reads in TCR, TRA and TRB.
+```{r, results='hide'}
+# TCR plot
+png(file.path(params$outputDir, "03_boxplot4_readsTCR.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_readsTCR
+dev.off()
+# TRA plot
+png(file.path(params$outputDir, "03_boxplot4_readsTRA.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_readsTRA
+dev.off()
+# TRB plot
+png(file.path(params$outputDir, "03_boxplot4_readsTRB.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_readsTRB
+dev.off()
+```
+
+
+## Clones
+Clones from MiXCR assemble report (before filtering).
+This number includes all the BCR+TCR clones that mixcr found.
+```{r}
+assemble_reports <- read.delim("01_assemble_reports.tsv")
+TCR_clones <- assemble_reports[,c("patientID", "TRA.chains", "TRB.chains", "TRD.chains", "TRG.chains")]
+TCR_clones$Clones <- rowSums(TCR_clones[,2:ncol(TCR_clones)])
+
+SampleInfo <- merge(SampleInfo, TCR_clones[,c("patientID", "Clones")],
+                    by.x = "SampleID", by.y = "patientID", sort = F)
+
+# Kruskal-Wallis test
+my_comparisons <- list(c("control", "withoutMHE"),
+                       c("control", "withMHE"),
+                       c("withMHE", "withoutMHE"))
+
+p1_clones <- ggboxplot(SampleInfo,
+                       x = "Group",
+                       y = "Clones",
+                       color = "Group",
+                       palette = cbPalette,
+                       add = "jitter") +
+             theme(legend.position = "none",
+                   text = element_text(size=20)) +
+             stat_compare_means(comparisons = my_comparisons,
+                                method = "wilcox.test") +
+             stat_compare_means(method = "kruskal",
+                                label.y = 10000)
+
+# plots
+p1_clones
+```
+
+### TCR clones
+Clones from mixcr output (after filtering). The clone number in mixcr.clones.txt output file does not correspond with the mixcr assemble report, probably because mixcr drop some clones (according some thresholds) before write the final output file. In a previous step we have filtered clones by the number of reads (we keep those clones with 2 or more reads, thus avoiding singletones). Additionally, mixcr output contained BCR+TCR clones and we exclude everything that is not TCR.
+```{r}
+summary_table_TCR <- read.delim("02_filtering-evenness_summarytable_TCR.csv")
+summary_table_TCR <- summary_table_TCR[,c("sample", "filterby_readcount")]
+colnames(summary_table_TCR) <- c("sample", "TCRclones")
+
+SampleInfo <- merge(SampleInfo, summary_table_TCR,
+                    by.x = "SampleID", by.y = "sample", sort = F)
+
+# Kruskal-Wallis test
+p1_clones_filtered_TCR <- ggboxplot(SampleInfo,
+                                    x = "Group",
+                                    y = "TCRclones",
+                                    fill = "chartreuse",
+                                    alpha = 0.5,
+                                    add = "jitter") +
+                          theme(legend.position = "none",
+                                text = element_text(size=20)) +
+                          stat_compare_means(comparisons = my_comparisons,
+                                             method = "wilcox.test") +
+                          stat_compare_means(method = "kruskal",
+                                             label.y = 2500)
+p1_clones_filtered_TCR
+```
+
+### TRA clones
+```{r}
+summary_table_TRA <- read.delim("02_filtering-evenness_summarytable_TRA.csv")
+summary_table_TRA <- summary_table_TRA[,c("sample", "filterby_readcount")]
+colnames(summary_table_TRA) <- c("sample", "TRAclones")
+
+SampleInfo <- merge(SampleInfo, summary_table_TRA, by.x = "SampleID", by.y = "sample", sort = F)
+
+# Kruskal-Wallis test
+p1_clones_filtered_TRA <- ggboxplot(SampleInfo,
+                                    x = "Group",
+                                    y = "TRAclones",
+                                    fill = "chartreuse",
+                                    alpha = 0.5,
+                                    add = "jitter") +
+                          theme(legend.position = "none",
+                                text = element_text(size=20)) +
+                          stat_compare_means(comparisons = my_comparisons,
+                                             method = "wilcox.test") +
+                          stat_compare_means(method = "kruskal",
+                                             label.y = 1500)
+p1_clones_filtered_TRA
+```
+
+### TRB clones
+```{r}
+summary_table_TRB <- read.delim("02_filtering-evenness_summarytable_TRB.csv")
+summary_table_TRB <- summary_table_TRB[,c("sample", "filterby_readcount")]
+colnames(summary_table_TRB) <- c("sample", "TRBclones")
+
+SampleInfo <- merge(SampleInfo, summary_table_TRB, by.x = "SampleID", by.y = "sample", sort = F)
+
+# Kruskal-Wallis test
+p1_clones_filtered_TRB <- ggboxplot(SampleInfo,
+                                    x = "Group",
+                                    y = "TRBclones",
+                                    fill = "chartreuse",
+                                    alpha = 0.5,
+                                    add = "jitter") +
+                          theme(legend.position = "none",
+                                text = element_text(size=20)) +
+                          stat_compare_means(comparisons = my_comparisons,
+                                             method = "wilcox.test") +
+                          stat_compare_means(method = "kruskal",
+                                             label.y = 1500)
+p1_clones_filtered_TRB
+```
+
+### Final plot
+Final plots of the number of clones in TCR, TRA and TRB.
+```{r, results='hide'}
+# TCR plot
+png(file.path(params$outputDir, "03_boxplot5_clonesTCR.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_clones_filtered_TCR
+dev.off()
+
+# TRA plot
+png(file.path(params$outputDir, "03_boxplot5_clonesTRA.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_clones_filtered_TRA
+dev.off()
+
+# TRB plot
+png(file.path(params$outputDir, "03_boxplot5_clonesTRB.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_clones_filtered_TRB
+dev.off()
+```
+
+## Shannon Evenness
+In the filtering step we also calculated Shannon Evenness as defined in (Greiff et al. Genome medicine, 2015, 7:49).
+
+### TCR shannon
+```{r}
+summary_table_TCR <- read.delim("02_filtering-evenness_summarytable_TCR.csv")
+summary_table_TCR <- summary_table_TCR[,c("sample", "shannon")]
+summary_table_TCR$shannon <- round(summary_table_TCR$shannon, 4)
+colnames(summary_table_TCR) <- c("sample", "TCRshannon")
+
+SampleInfo <- merge(SampleInfo, summary_table_TCR, by.x = "SampleID", by.y = "sample", sort = F)
+
+# Kruskal-Wallis test
+p1_shannon_filtered_TCR <- ggboxplot(SampleInfo,
+                                     x = "Group",
+                                     y = "TCRshannon",
+                                     fill = "yellow",
+                                     add = "jitter") +
+                           theme(legend.position = "none",
+                                 text = element_text(size=20)) +
+                           stat_compare_means(comparisons = my_comparisons,
+                                              method = "wilcox.test") +
+                           stat_compare_means(method = "kruskal",
+                                              label.y = 1.3)
+p1_shannon_filtered_TCR
+```
+
+### TRA shannon
+```{r}
+summary_table_TRA <- read.delim("02_filtering-evenness_summarytable_TRA.csv")
+summary_table_TRA <- summary_table_TRA[,c("sample", "shannon")]
+summary_table_TRA$shannon <- round(summary_table_TRA$shannon, 4)
+colnames(summary_table_TRA) <- c("sample", "TRAshannon")
+
+SampleInfo <- merge(SampleInfo, summary_table_TRA, by.x = "SampleID", by.y = "sample", sort = F)
+
+# Kruskal-Wallis test
+p1_shannon_filtered_TRA <- ggboxplot(SampleInfo,
+                                     x = "Group",
+                                     y = "TRAshannon",
+                                     fill = "yellow",
+                                     add = "jitter") +
+                           theme(legend.position = "none",
+                                 text = element_text(size=20)) +
+                           stat_compare_means(comparisons = my_comparisons,
+                                              method = "wilcox.test") +
+                           stat_compare_means(method = "kruskal",
+                                              label.y =  1.3)
+p1_shannon_filtered_TRA
+```
+
+### TRB shannon
+```{r}
+summary_table_TRB <- read.delim("02_filtering-evenness_summarytable_TRB.csv")
+summary_table_TRB <- summary_table_TRB[,c("sample", "shannon")]
+summary_table_TRB$shannon <- round(summary_table_TRB$shannon, 4)
+colnames(summary_table_TRB) <- c("sample", "TRBshannon")
+
+SampleInfo <- merge(SampleInfo, summary_table_TRB, by.x = "SampleID", by.y = "sample", sort = F)
+
+# Kruskal-Wallis test
+p1_shannon_filtered_TRB <- ggboxplot(SampleInfo,
+                                     x = "Group",
+                                     y = "TRBshannon",
+                                     fill = "yellow",
+                                     add = "jitter") +
+                           theme(legend.position = "none",
+                                 text = element_text(size=20)) +
+                           stat_compare_means(comparisons = my_comparisons,
+                                              method = "wilcox.test") +
+                           stat_compare_means(method = "kruskal",
+                                              label.y = 1.3)
+p1_shannon_filtered_TRB
+```
+
+### Final plot
+Final plots of the Shannon eveness in TCR, TRA and TRB clones.
+```{r, results='hide'}
+# TCR plot
+png(file.path(params$outputDir, "03_boxplot6_shannonTCR.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_shannon_filtered_TCR
+dev.off()
+
+# TRA plot
+png(file.path(params$outputDir, "03_boxplot6_shannonTRA.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_shannon_filtered_TRA
+dev.off()
+
+# TRB plot
+png(file.path(params$outputDir, "03_boxplot6_shannonTRB.png"), height = 30, width = 30, units = "cm", res = 300)
+p1_shannon_filtered_TRB
+dev.off()
+```
+
+# Output
+Columns have been added to the SampleInfo file: 
+* ReadPairsNumber: total number of reads in the .fastq raw files.
+* TCRreads:  succesfully aligned reads to TCR region (TRA+TRB+TRD+TRG)
+* TRAreads:  succesfully aligned reads to TRA chain 
+* TRBreads:  succesfully aligned reads to TRB chain 
+* Clones:    total number of assembled clones (B and T-cells) 
+* TCRclones: total number of assembled TCR clones (TRA+TRB+TRD+TRG)
+* TRAclones: total number of assembled TRA clones
+* TRBclones: total number of assembled TRB clones
+```{r}
+write.table(SampleInfo, file = file.path(params$outputDir, "03_datasetoverview.csv"),
+            sep = ",", row.names = F, col.names = T, quote = F)
+```
+

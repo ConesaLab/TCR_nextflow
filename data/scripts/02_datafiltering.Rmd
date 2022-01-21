@@ -22,26 +22,13 @@ library(microbiome)
 # Work enviroment
 ```{r}
 # Define input/work/output directories
-#inputDir <- "~/MHE_TCR/01_MiXCR"
-#workDir <- "~/MHE_TCR/02_DataFiltering"
-#outputDir <- "~/MHE_TCR/TCRanalysis_bookdown"
-
+sampleInfoFile <- params$sampleInfo
 dir.create(params$outputDir, recursive=T)
 
-sampleInfoFile <- params$sampleInfo
-levels <- params$sampleLevels
-
-#setwd(workDir)
-
-save(params, file="params.RData")
-
 # Load sample info
-SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T)
-SampleInfo <- SampleInfo[order(nchar(SampleInfo$CRG.code), SampleInfo$CRG.code),]
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T, check.names = F)
+levels <- unique(SampleInfo$Group)
 SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
-
-SampleInfo_ordered <- SampleInfo[order(SampleInfo$SampleID),]
-SampleInfo_ordered <- SampleInfo_ordered[order(SampleInfo_ordered$Group),]
 ```
 
 # Clones from mixcr output
@@ -55,13 +42,14 @@ Three types of clones are calculated:
 
 ## TCR clonotypes
 ```{r}
-# List input files
-files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt", full.names = T)
-files <- files[order(nchar(files), files)]
-files <- files[SampleInfo_ordered$files_order]
+# List input files and keep SampleInfo order
+files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt",
+                    full.names = T)
+files <- files[order(nchar(SampleInfo$SampleID), SampleInfo$SampleID)]
 
 # Create a list of clone tables
-clonotypes_all <- setNames(lapply(files, read.delim), nm = SampleInfo_ordered$SampleID)
+clonotypes_all <- setNames(lapply(files, read.delim), 
+                           nm = SampleInfo$SampleID)
 
 # Exclude everything that is not TCR
 clonotypes_tcr <- lapply(clonotypes_all, function(i){
@@ -91,19 +79,12 @@ clones_TCR_filtered <- lapply(clonotypes_tcr, function(i){
   cbind(i, recalculatedcloneFraction)
 })
 
-save(clones_TCR_filtered, file = file.path(params$workDir, "clones_TCR_filtered.Rda"))
+save(clones_TCR_filtered, file = file.path(params$workDir,
+                                           "clones_TCR_filtered.Rda"))
 ```
 
 ## TRA clonotypes
 ```{r}
-# List input files
-files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt", full.names = T)
-files <- files[order(nchar(files), files)]
-files <- files[SampleInfo_ordered$files_order]
-
-# Create a list of clone tables
-clonotypes_all <- setNames(lapply(files, read.delim), nm = SampleInfo_ordered$SampleID)
-
 # Exclude everything that is not TRA
 clonotypes_TRA <- lapply(clonotypes_all, function(i){
   i = i[grep("TRA", i$allVHitsWithScore),]
@@ -134,19 +115,12 @@ clones_TRA_filtered <- lapply(clonotypes_TRA, function(i){
   cbind(i, recalculatedcloneFraction)
 })
 
-save(clones_TRA_filtered, file = file.path(params$workDir, "clones_TRA_filtered.Rda"))
+save(clones_TRA_filtered, file = file.path(params$workDir,
+                                           "clones_TRA_filtered.Rda"))
 ```
 
 ## TRB clonotypes
 ```{r}
-# List input files
-files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt", full.names = T)
-files <- files[order(nchar(files), files)]
-files <- files[SampleInfo_ordered$files_order]
-
-# Create a list of clone tables
-clonotypes_all <- setNames(lapply(files, read.delim), nm = SampleInfo_ordered$SampleID)
-
 # Exclude everything that is not TRB
 clonotypes_TRB <- lapply(clonotypes_all, function(i){
   i = i[grep("TRB", i$allVHitsWithScore),]
@@ -175,7 +149,8 @@ clones_TRB_filtered <- lapply(clonotypes_TRB, function(i){
   cbind(i, recalculatedcloneFraction)
 })
 
-save(clones_TRB_filtered, file = file.path(params$workDir, "clones_TRB_filtered.Rda"))
+save(clones_TRB_filtered, file = file.path(params$workDir,
+                                           "clones_TRB_filtered.Rda"))
 ```
 
 
@@ -217,11 +192,11 @@ summary_table_tcr <- cbind(summary_table_tcr, TCR_SE)
 summary_table_TRA <- cbind(summary_table_TRA, TRA_SE)
 summary_table_TRB <- cbind(summary_table_TRB, TRB_SE)
 
-write.table(summary_table_tcr, file = file.path(params$outputDir, "02_filtering&evenness_summarytable_TCR.csv"),
+write.table(summary_table_tcr, file = file.path(params$outputDir, "02_filtering-evenness_summarytable_TCR.csv"),
             sep = "\t", row.names = F, col.names = T, quote = F)
-write.table(summary_table_TRA, file = file.path(params$outputDir, "02_filtering&evenness_summarytable_TRA.csv"),
+write.table(summary_table_TRA, file = file.path(params$outputDir, "02_filtering-evenness_summarytable_TRA.csv"),
             sep = "\t", row.names = F, col.names = T, quote = F)
-write.table(summary_table_TRB, file = file.path(params$outputDir, "02_filtering&evenness_summarytable_TRB.csv"),
+write.table(summary_table_TRB, file = file.path(params$outputDir, "02_filtering-evenness_summarytable_TRB.csv"),
             sep = "\t", row.names = F, col.names = T, quote = F)
 
 # Filtered files
@@ -231,19 +206,22 @@ dir.create("clones_TRB_filtered")
 
 lapply(names(clones_TCR_filtered), function(x){
   write.table(clones_TCR_filtered[[x]],
-              file = file.path(params$workDir, "clones_TCR_filtered", paste0(x, ".txt")),
+              file = file.path(params$workDir, "clones_TCR_filtered", 
+                               paste0(x, ".txt")),
               quote = F, sep = "\t", row.names = F)
 })
 
 lapply(names(clones_TRA_filtered), function(x){
   write.table(clones_TRA_filtered[[x]],
-              file = file.path(params$workDir, "clones_TRA_filtered", paste0(x, ".txt")),
+              file = file.path(params$workDir, "clones_TRA_filtered", 
+                               paste0(x, ".txt")),
               quote = F, sep = "\t", row.names = F)
 })
 
 lapply(names(clones_TRB_filtered), function(x){
   write.table(clones_TRB_filtered[[x]],
-              file = file.path(params$workDir, "clones_TRB_filtered", paste0(x, ".txt")),
+              file = file.path(params$workDir, "clones_TRB_filtered", 
+                               paste0(x, ".txt")),
               quote = F, sep = "\t", row.names = F)
 })
 ```
