@@ -360,11 +360,60 @@ process network {
     """
 }
 
+/*
+* Step 9. Databases
+*/
+process ddbb {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/09_Databases",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+    path(mcpas)
+    path(vdjdb)
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*")
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/09_ddbb.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}',
+        'specie'='${params.specie}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
 workflow {
 
    Channel.fromPath("${params.readfiles}")
             .ifEmpty { exit 1, "File not foud: ${params.readfiles}" }
             .set { sampleInfoChannel }
+
+   Channel.fromPath("${params.mcpas}")
+            .ifEmpty { exit 1, "File not foud: ${params.mcpas}" }
+            .set { mcpasChannel }
+   Channel.fromPath("${params.vdjdb}")
+            .ifEmpty { exit 1, "File not foud: ${params.vdjdb}" }
+            .set { vdjdbChannel }
 
    /*
    * Create a channel that emits tuples containing three elements:
@@ -397,4 +446,5 @@ workflow {
 
     network(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
+    ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
 }
