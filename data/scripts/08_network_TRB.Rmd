@@ -1,0 +1,144 @@
+---
+title: "08 - Network (TRB)"
+author: "Teresa Rubio"
+date: "March, 2021"
+output: html_document
+---
+
+# Packages
+```{r, message=FALSE}
+library(immunarch)
+library(stringdist)
+library(purrr)
+library(NMF)
+library(viridis)
+library(ggpubr)
+```
+
+# Work enviroment
+```{r}
+# Define input/output directories
+inputDir <- "~/MHE_TCR/02_DataFiltering"
+outputDir <- "~/MHE_TCR/TCRanalysis_bookdown"
+articleDir <- "~/MHE_TCR/TCRanalysis_articlefigures"
+
+# Load sample info
+SampleInfo <- read.csv("samplesinfo.csv", check.names = F)
+SampleInfo$Group <- factor(SampleInfo$Group, levels = unique(SampleInfo$Group))
+groups_color <- c("#56B4E9", "red", "black")
+
+chain <- "TRB"
+```
+
+# List of repertoires
+```{r}
+# Filtered (reads>1) MiXCR data
+immdata <- immunarch::repLoad(file.path(inputDir, paste0("clones_",chain,"_filtered")))
+immdata <- immdata$data
+```
+
+# Network degree
+Here, nodes are clonotypes and an edge is only drawn, if sequences are 1 LV [levenshtein distance] apart. This will created a boolean undirected graph.
+```{r, message=FALSE}
+threshold <- 1
+
+degree <- lapply(names(immdata), function(i){
+  
+    cdr3 <- immdata[[i]]$CDR3.aa
+    classes <- rep(c("Public", "Private"), times = c(2,2))
+    cdr3_dist  <- stringdist::stringdistmatrix(cdr3, method = "lv")
+    
+    cdr3_mat <- as.matrix(cdr3_dist)
+    cdr3_bol <- cdr3_mat
+    cdr3_bol[cdr3_bol<=threshold] <- 1
+    cdr3_bol[cdr3_bol>threshold] <- 0
+    
+    colnames(cdr3_bol) <- as.character(cdr3)
+    rownames(cdr3_bol) <- as.character(cdr3)
+
+    vector_degree <- data.frame(table(rowSums(cdr3_bol) - 1))
+    mean_degree <- mean(c(rep(vector_degree$Var1, vector_degree$Freq)))
+    mean_degree <- data.frame(Var1 = "mean", Freq = mean_degree)
+    
+    return(rbind(vector_degree, mean_degree))
+    
+})
+
+degree <- degree %>% purrr::reduce(full_join, by = "Var1")
+rownames(degree) <- degree[,1]
+degree <- degree[,-1]
+degree <- degree[order(nchar(rownames(degree)), rownames(degree)),]
+colnames(degree) <- names(immdata)
+```
+
+## Absolute number and percentage of clones with degree 0
+```{r}
+# Absolute
+apply(degree[-6,],1,function(x){x/colSums(degree[-6,], na.rm = T) *100})
+
+# Percentage
+sum(degree[1,]) / sum(degree[-6,], na.rm = T) *100
+```
+
+## Final plot
+```{r}
+png(file.path(outputDir, "08_network_degree_heatmap.png"))
+color_df <- data.frame(Group = SampleInfo$Group)
+NMF::aheatmap(degree[-nrow(degree),],
+              color = viridis::magma(100),
+              main = "Degree distribution of all clones (public and private)",
+              Rowv = NA,
+              cexRow = 0.3,
+              legend = T,
+              annCol = color_df,
+              annColors = list(groups_color))
+dev.off()
+```
+
+## Article figure
+```{r}
+png(file.path(articleDir, "Figure2D.png"), height = 20, width = 20, units = "cm", res = 300)
+color_df <- data.frame(Group = SampleInfo$Group)
+NMF::aheatmap(degree[-nrow(degree),],
+              color = viridis::magma(100),
+              main = "Degree distribution of all clones (public and private)",
+              Rowv = NA,
+              cexRow = 0.3,
+              legend = T,
+              annCol = color_df,
+              annColors = list(groups_color))
+dev.off()
+```
+
+## Is degree=0 Statistically significant?
+Patient PC134 was considered an outlier in the group withMHE and it was removed in this test.
+```{r}
+degree0_withoutoutlier = data.frame(t(degree[1,!colnames(degree) == "PC134"]))
+degree0_withoutoutlier = cbind(degree0_withoutoutlier, 
+                               SampleInfo$Group[!colnames(degree) == "PC134"])
+colnames(degree0_withoutoutlier) = c("degree0", "group")
+
+my_comparisons <- list(c("control", "withoutMHE"), 
+                       c("control", "withMHE"), 
+                       c("withMHE", "withoutMHE"))
+
+png(file.path(articleDir, "Figure2E.png"), height = 20, width = 20, units = "cm", res = 300)
+ggboxplot(degree0_withoutoutlier,
+          x = "group", 
+          y = "degree0",
+          ylab = "degree=0",
+          fill =  groups_color, 
+          alpha = 0.5,
+          show.legend = FALSE,
+          add = "jitter") +
+  theme(legend.position = "none",
+        text = element_text(size=15)) +
+  stat_compare_means(comparisons = my_comparisons, 
+                     method = "wilcox.test",
+                     size = 5) +
+  stat_compare_means(method = "kruskal", 
+                     label.y = 1300,
+                     size = 5)
+dev.off()
+```
+

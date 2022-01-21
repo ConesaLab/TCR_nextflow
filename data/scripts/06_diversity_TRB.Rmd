@@ -1,0 +1,94 @@
+---
+title: "05 - Clonal Expansion (TRB)"
+author: "Teresa Rubio"
+date: "March, 2021"
+output: html_document
+---
+
+# Packages
+```{r, message=FALSE}
+library(devtools)
+library(NMF)
+library(vegan)
+library(RcmdrMisc)
+library(viridis)
+```
+
+# Work enviroment
+```{r}
+# Define input/output directories
+inputDir <- "~/MHE_TCR/02_DataFiltering"
+outputDir <- "~/MHE_TCR/TCRanalysis_bookdown"
+articleDir <- "~/MHE_TCR/TCRanalysis_articlefigures"
+
+# Load sample info
+SampleInfo <- read.csv(file.path(outputDir, "03_datasetoverview.csv"), check.names = F)
+SampleInfo$Group <- factor(SampleInfo$Group, levels = unique(SampleInfo$Group))
+groups_color <- c("#56B4E9", "red", "black")
+
+chain <- "TRB"
+```
+
+
+# Clonal Expansion
+
+## evenness profiles heatmap
+```{r, results='hide'}
+# Load list of clonotypes tables
+load(file.path(inputDir, paste0("clones_",chain,"_filtered.Rda")))
+data <- clones_TRB_filtered
+
+# Calculate profiles evenness matrix (evenness ranges from 0 to 10 with a step size of 0.2)
+profiles_evenness_matrix_TRB <- t(t(sapply(data, function(x) 
+  exp(vegan::renyi(x[,"recalculatedcloneFraction"], scales = seq(0,10,0.2)))))/sapply(data, nrow))
+
+# Heatmap
+color_df <- data.frame(Group = SampleInfo$Group)
+
+png(file.path(outputDir, "05_ClonalExpansion.png"), height = 20, width = 23, units = "cm", res = 300)
+NMF::aheatmap(cor(profiles_evenness_matrix_TRB, method = "pearson"), 
+              color = magma(100),
+              cexRow = 0.4,
+              annCol = color_df,
+              annRow = color_df,
+              annColors = list(groups_color))
+dev.off()
+```
+
+## Test correlation significance
+```{r}
+# ++++++++++++++++++++++++++++
+# flattenCorrMatrix
+# ++++++++++++++++++++++++++++
+# cormat : matrix of the correlation coefficients
+# pmat : matrix of the correlation p-values
+flattenCorrMatrix <- function(cormat, pmat) {
+  ut <- upper.tri(cormat)
+  data.frame(
+    row = rownames(cormat)[row(cormat)[ut]],
+    column = rownames(cormat)[col(cormat)[ut]],
+    cor = (cormat)[ut],
+    p = pmat[ut]
+    )
+}
+
+res <- RcmdrMisc::rcorr.adjust(as.matrix(profiles_evenness_matrix_TRB), type="pearson")
+cormatrix <- flattenCorrMatrix(res$R$r, res$R$P)
+cormatrix$cor <- round(cormatrix$cor, 3)
+write.table(cormatrix, file = file.path(outputDir, "05_clonalexpansion_TRB_corrmatrix.csv"), 
+            sep = ",", row.names = F, col.names = T, quote = F)
+```
+
+# Article figure
+```{r, results='hide'}
+png(file.path(articleDir, "Figure2B.png"), height = 20, width = 23, units = "cm", res = 300)
+NMF::aheatmap(cor(profiles_evenness_matrix_TRB, method = "pearson"), 
+              color = magma(100),
+              main = "Diversity - Pearson Correlation",
+              cexRow = 0.4,
+              annCol = color_df,
+              annRow = color_df,
+              annColors = list(groups_color))
+dev.off()
+```
+

@@ -75,13 +75,26 @@ vdjdb_specie <- subset(vdjdb_specie, !is.na(Epitope.species))
 cdrsets <- list()
 immdata <- immunarch::repLoad(file.path(params$inputDir, paste0("clones_",chain,"_filtered")))
 
+# # control group
+# control <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == "control"])]
+# control_cdrs <- unique(do.call(rbind, lapply(control, function(x) x[,"CDR3.aa",drop=F])))
+# cdrsets$control <- control_cdrs$CDR3.aa
+# 
+# # withoutMHE group
+# withoutMHE <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == "withoutMHE"])]
+# withoutMHE_cdrs <- unique(do.call(rbind, lapply(withoutMHE, function(x) x[,"CDR3.aa",drop=F])))
+# cdrsets$withoutMHE <- withoutMHE_cdrs$CDR3.aa
+# 
+# # withMHE group
+# withMHE <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == "withMHE"])]
+# withMHE_cdrs <- unique(do.call(rbind, lapply(withMHE, function(x) x[,"CDR3.aa",drop=F])))
+# cdrsets$withMHE <- withMHE_cdrs$CDR3.aa
+save.image(file = "my_work_space.RData")
 cdrsets <- setNames(lapply(levels, function(i){
               group <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == i])]
               group_cdrs <- unique(do.call(rbind, lapply(group, function(x) x[,"CDR3.aa",drop=F])))
               group_cdrs$CDR3.aa
             }), nm = levels)
-
-save.image(file = "my_work_space.RData")
 ```
 
 
@@ -95,9 +108,6 @@ The p-values are adjusted for multiple testing using Benjamini-Hochberg FDR corr
 get_stats <- function(db, cdr3, disease) {
   disease_cdr3 <- unique(db$CDR3.beta.aa[db$Pathology == disease])
   cont_table <- table(unique(db$CDR3.beta.aa) %in% cdr3, unique(db$CDR3.beta.aa) %in% disease_cdr3)
-  if (nrow(cont_table) == 1) {
-    cont_table <- rbind(cont_table, c(0,0))
-  }
   rownames(cont_table) <- c("not_in_data", "in_data")
   colnames(cont_table) <- c("not_in_disease","in_disease")
   pval <- fisher.test(cont_table, alternative = "great")$p.value
@@ -134,9 +144,6 @@ write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_dd
 get_stats <- function(db, cdr3, disease) {
   disease_cdr3 <- unique(db$CDR3[db$Epitope.species == disease])
   cont_table <- table(unique(db$CDR3) %in% cdr3, unique(db$CDR3) %in% disease_cdr3)
-  if (nrow(cont_table) == 1) {
-    cont_table <- rbind(cont_table, c(0,0))
-  }
   rownames(cont_table) <- c("not_in_data", "in_data")
   colnames(cont_table) <- c("not_in_disease","in_disease")
   pval <- fisher.test(cont_table, alternative = "great")$p.value
