@@ -79,7 +79,8 @@ clones_TCR_filtered <- lapply(clonotypes_tcr, function(i){
   cbind(i, recalculatedcloneFraction)
 })
 
-save(clones_TCR_filtered, file = file.path(params$workDir,
+clones_filtered <- clones_TCR_filtered
+save(clones_filtered, file = file.path(params$workDir,
                                            "clones_TCR_filtered.Rda"))
 ```
 
@@ -115,7 +116,8 @@ clones_TRA_filtered <- lapply(clonotypes_TRA, function(i){
   cbind(i, recalculatedcloneFraction)
 })
 
-save(clones_TRA_filtered, file = file.path(params$workDir,
+clones_filtered <- clones_TRA_filtered
+save(clones_filtered, file = file.path(params$workDir,
                                            "clones_TRA_filtered.Rda"))
 ```
 
@@ -149,7 +151,8 @@ clones_TRB_filtered <- lapply(clonotypes_TRB, function(i){
   cbind(i, recalculatedcloneFraction)
 })
 
-save(clones_TRB_filtered, file = file.path(params$workDir,
+clones_filtered <- clones_TRB_filtered
+save(clones_filtered, file = file.path(params$workDir,
                                            "clones_TRB_filtered.Rda"))
 ```
 

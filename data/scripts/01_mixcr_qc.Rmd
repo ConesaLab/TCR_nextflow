@@ -86,7 +86,7 @@ cbPalette4chains <- RColorBrewer::brewer.pal(length(unique(df_gather_chains$para
 patient_color <- cbPalette[factor(SampleInfo$Group)]
 
 # Plot                                           
-p1 <- ggplot(df_gather_chains,
+alignment_plot <- ggplot(df_gather_chains,
              aes(fill = parameter,
                  y = reads,
                  x = patient)) +
@@ -98,13 +98,15 @@ p1 <- ggplot(df_gather_chains,
       theme(axis.text.x = element_text(angle = 90,
                                        color = patient_color)) +
       scale_fill_manual(values = cbPalette4chains)
-p1
+alignment_plot
 ```
 
+## Output files
 ```{r, results='hide'}
-# Rbookdown plot
-png(file.path(params$outputDir, "01_alignment_report.png"), width = 30, height = 15, units = "cm", res = 300)
-p1
+save(alignment_plot, file = file.path(params$workDir, "01_alignment_plot.Rda"))
+
+png(file.path(params$outputDir, "01_alignment_plot.png"), width = 30, height = 15, units = "cm", res = 300)
+alignment_plot
 dev.off()
 ```
 
@@ -153,7 +155,7 @@ cbPalette4chains <- RColorBrewer::brewer.pal(length(unique(df_gather_chains$para
 patient_color <- cbPalette[factor(SampleInfo$Group)]
 
 # Plot
-p2 <- ggplot(df_gather_chains,
+assemble_plot <- ggplot(df_gather_chains,
              aes(fill = parameter,
                  y = reads,
                  x = patient)) +
@@ -165,12 +167,14 @@ p2 <- ggplot(df_gather_chains,
       theme(axis.text.x = element_text(angle = 90,
                                        color = patient_color)) +
       scale_fill_manual(values = cbPalette4chains)
-p2
+assemble_plot
 ```
 
+## Output files
 ```{r, results='hide'}
-# Rbookdown plot
-png(file.path(params$outputDir, "01_assemble_report.png"), width = 30, height = 15, units = "cm", res = 300)
-p2
+save(assemble_plot, file = file.path(params$workDir, "01_assemble_plot.Rda"))
+
+png(file.path(params$outputDir, "01_assemble_plot.png"), width = 30, height = 15, units = "cm", res = 300)
+assemble_plot
 dev.off()
 ```

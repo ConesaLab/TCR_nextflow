@@ -1,0 +1,172 @@
+---
+title: "09 - Antigen specificity (database analysis)"
+authors: "Maria Chernigovskaya and Teresa Rubio"
+date: "March, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+  chain: !r NULL
+  specie: !r NULL
+---
+
+# Packages
+```{r, warning=F, message=FALSE}
+library(immunarch)
+library(reshape2)
+library(openxlsx)
+```
+
+# Work enviroment
+```{r}
+# Define output directory and TCR chain
+sampleInfoFile <- params$sampleInfo
+dir.create(params$outputDir, recursive=T)
+chain <- params$chain
+
+# Load sample info
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T, check.names = F)
+levels <- unique(SampleInfo$Group)
+SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
+```
+
+# McPAS
+The database was last updated on: March 6, 2021. #TRA+TRB ddbb:August 5, 2021.
+Downloaded on: March 12, 2021. #January 21, 2022
+```{r}
+mcpas_db <- read.csv("McPAS-TCR.csv", stringsAsFactor = FALSE, sep = ",")
+
+mcpas_db <- mcpas_db[!is.na(mcpas_db$CDR3.beta.aa),]
+# Correcting database typos
+mcpas_db$Pathology <- gsub("IBD\\).", "IBD)", mcpas_db$Pathology)
+mcpas_db$Pathology <- gsub("M.Tuberculosis", "M. tuberculosis", mcpas_db$Pathology)
+mcpas_db$Pathology <- gsub("Hepatitis C virus \\(HCV\\)", "Hepatitis C virus", mcpas_db$Pathology)
+mcpas_db$Pathology <- gsub("HTLV-1 \\(Chronic", "HTLV-1", mcpas_db$Pathology)
+mcpas_db$Pathology <- gsub("Psoriatic arthritis", "Psoriatic Arthritis", mcpas_db$Pathology)
+# Filtering database
+mcpas_db_specie <- subset(mcpas_db, Species == params$specie & nchar(CDR3.beta.aa) > 4)
+# mcpas_db_specie <- subset(mcpas_db_specie, Category == "Autoimmune" | Category == "Pathogens")
+mcpas_db_specie <- subset(mcpas_db_specie, !is.na(Pathology))
+```
+
+# VDJdb
+Last updated on 02 February, 2021. #TRA+TRB ddbb: 05 September, 2021
+Downloaded on: March 12, 2021. #January 21, 2022
+```{r}
+VDJdb <- read.delim("VDJdb-TCR.tsv")
+
+if (params$specie == "Human") {
+  specie <- "HomoSapiens"
+} else {
+  specie <- "MusMusculus"
+}
+
+vdjdb_specie <- subset(VDJdb, Species == specie & nchar(CDR3) > 4)
+vdjdb_specie <- subset(vdjdb_specie, Gene == chain)
+vdjdb_specie <- subset(vdjdb_specie, !is.na(Epitope.species))
+```
+
+# CDR3 sets by experimental group
+```{r}
+cdrsets <- list()
+immdata <- immunarch::repLoad(file.path(params$inputDir, paste0("clones_",chain,"_filtered")))
+
+# # control group
+# control <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == "control"])]
+# control_cdrs <- unique(do.call(rbind, lapply(control, function(x) x[,"CDR3.aa",drop=F])))
+# cdrsets$control <- control_cdrs$CDR3.aa
+# 
+# # withoutMHE group
+# withoutMHE <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == "withoutMHE"])]
+# withoutMHE_cdrs <- unique(do.call(rbind, lapply(withoutMHE, function(x) x[,"CDR3.aa",drop=F])))
+# cdrsets$withoutMHE <- withoutMHE_cdrs$CDR3.aa
+# 
+# # withMHE group
+# withMHE <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == "withMHE"])]
+# withMHE_cdrs <- unique(do.call(rbind, lapply(withMHE, function(x) x[,"CDR3.aa",drop=F])))
+# cdrsets$withMHE <- withMHE_cdrs$CDR3.aa
+save.image(file = "my_work_space.RData")
+cdrsets <- setNames(lapply(levels, function(i){
+              group <- immdata$data[c(SampleInfo$SampleID[SampleInfo$Group == i])]
+              group_cdrs <- unique(do.call(rbind, lapply(group, function(x) x[,"CDR3.aa",drop=F])))
+              group_cdrs$CDR3.aa
+            }), nm = levels)
+```
+
+
+# Statistical test
+## ref db = mcpas
+The p-values are adjusted for multiple testing using Benjamini-Hochberg FDR correction considering both the number of diseases and the number of sample groups tested.
+```{r}
+# db : reference database (mcpas)
+# cdr3 : data (CDR3 sets)
+# disease : disease name (e.g. HIV, CMV, etc)
+get_stats <- function(db, cdr3, disease) {
+  disease_cdr3 <- unique(db$CDR3.beta.aa[db$Pathology == disease])
+  cont_table <- table(unique(db$CDR3.beta.aa) %in% cdr3, unique(db$CDR3.beta.aa) %in% disease_cdr3)
+  rownames(cont_table) <- c("not_in_data", "in_data")
+  colnames(cont_table) <- c("not_in_disease","in_disease")
+  pval <- fisher.test(cont_table, alternative = "great")$p.value
+  return(pval)
+}
+
+pvalues <- do.call(cbind, lapply(cdrsets, function(cdr3set){
+  diseases <- unique(mcpas_db_specie$Pathology)
+  pvals <- rep(NA, length(diseases))
+
+  for (i in 1:length(diseases)) {
+    pvals[i] <- get_stats(db = mcpas_db_specie, cdr3 = cdr3set, disease = diseases[i])
+    names(pvals)[i] <- diseases[i]
+  }
+
+  return(pvals)
+
+}))
+
+adj_pval <- matrix(p.adjust(pvalues, method = "fdr"), nrow = nrow(pvalues), ncol = length(levels))
+rownames(adj_pval) <- rownames(pvalues)
+colnames(adj_pval) <- colnames(pvalues)
+adj_pval <- adj_pval[order(rownames(adj_pval)),]
+
+write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_mcpas_", chain, ".csv")), row.names = T)
+```
+
+
+## ref db = vdjdb
+```{r}
+# db : reference database (vdjdb)
+# cdr3 : data (CDR3 sets)
+# disease : disease name (e.g. HIV, CMV, etc)
+get_stats <- function(db, cdr3, disease) {
+  disease_cdr3 <- unique(db$CDR3[db$Epitope.species == disease])
+  cont_table <- table(unique(db$CDR3) %in% cdr3, unique(db$CDR3) %in% disease_cdr3)
+  rownames(cont_table) <- c("not_in_data", "in_data")
+  colnames(cont_table) <- c("not_in_disease","in_disease")
+  pval <- fisher.test(cont_table, alternative = "great")$p.value
+  return(pval)
+}
+
+pvalues = do.call(cbind, lapply(cdrsets, function(cdr3set){
+  diseases <- unique(vdjdb_specie$Epitope.species)
+  pvals <- rep(NA, length(diseases))
+
+  for (i in 1:length(diseases)) {
+    pvals[i] <- get_stats(db = vdjdb_specie, cdr3 = cdr3set, disease = diseases[i])
+    names(pvals)[i] <- diseases[i]
+  }
+
+  return(pvals)
+
+}))
+
+adj_pval <- matrix(p.adjust(pvalues, method = "fdr"), nrow = nrow(pvalues), ncol = length(levels))
+rownames(adj_pval) <- rownames(pvalues)
+colnames(adj_pval) <- colnames(pvalues)
+adj_pval = adj_pval[order(rownames(adj_pval)),]
+
+write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_vdjdb_", chain, ".csv")), row.names = T)
+```

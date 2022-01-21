@@ -1,0 +1,73 @@
+---
+title: "06 - Clonal Expansion (Diversity)"
+author: "Teresa Rubio"
+date: "March, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+  chain: !r NULL
+---
+
+# Packages
+```{r, message=FALSE}
+# library(NMF)
+library(vegan)
+library(RcmdrMisc)
+library(viridis)
+```
+
+# Work enviroment
+```{r}
+# Define output directory and TCR chain
+sampleInfoFile <- params$sampleInfo
+dir.create(params$outputDir, recursive=T)
+chain <- params$chain
+
+# Load sample info
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T, check.names = F)
+levels <- unique(SampleInfo$Group)
+SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
+
+# Color palette for sample groups
+cbPalette <- c("#56B4E9","#CB181D","#000000","#CC79A7","#db6d00","#009E73",
+               "#006ddb","#b66dff","#924900","#490092","#999999","#F0E442")
+```
+
+
+# Clonal Expansion
+
+## evenness profiles heatmap
+```{r, results='hide'}
+# Load list of clonotypes tables
+load(paste0("clones_",chain,"_filtered.Rda"))
+data <- clones_filtered
+
+# Calculate profiles evenness matrix (evenness ranges from 0 to 10 with a step size of 0.2)
+diversity_table <- t(t(sapply(data, function(x) 
+  exp(vegan::renyi(x[,"recalculatedcloneFraction"], scales = seq(0,10,0.2)))))/sapply(data, nrow))
+
+# Heatmap
+png(file.path(params$outputDir, paste0("06_diversity_heatmap_", chain, ".png")), height = 20, width = 23, units = "cm", res = 300)
+plot(1,2)
+# NMF::aheatmap(cor(diversity_table, method = "pearson"), 
+#               color = viridis::magma(100),
+#               cexRow = 0.4,
+#               annCol = data.frame(Group = SampleInfo$Group),
+#               annRow = data.frame(Group = SampleInfo$Group),
+#               annColors = list(cbPalette[1:length(levels)]))
+dev.off()
+```
+
+## evenness profiles table
+```{r}
+diversity_cortable <- cor(diversity_table, method = "pearson")
+
+save(diversity_table, file = file.path(params$workDir, paste0("06_diversity_table_", chain, ".Rda")))
+save(diversity_cortable, file = file.path(params$workDir, paste0("06_diversity_cortable_", chain, ".Rda")))
+```
+

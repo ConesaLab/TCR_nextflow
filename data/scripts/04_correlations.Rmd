@@ -83,6 +83,8 @@ readsVScells
 
 ### Plot
 ```{r, results='hide', message=FALSE, warning=FALSE}
+save(readsVScells, file = file.path(params$workDir, paste0("04_correlations_readsVScells_",chain,".Rda")))
+
 png(file.path(params$outputDir, paste0("04_correlations_readsVScells_", chain, ".png")), 
     height = 30, width = 30, units = "cm", res = 300)
 readsVScells
@@ -109,6 +111,8 @@ clonesVScells
 
 ### Plot
 ```{r, results='hide', message=FALSE, warning=FALSE}
+save(clonesVScells, file = file.path(params$workDir, paste0("04_correlations_clonesVScells_",chain,".Rda")))
+
 png(file.path(params$outputDir, paste0("04_correlations_clonesVScells_", chain, ".png")),
     height = 30, width = 30, units = "cm", res = 300)
 clonesVScells
@@ -135,6 +139,8 @@ clonesVSreads
 
 ### Plot
 ```{r, results='hide', message=FALSE, warning=FALSE}
+save(clonesVSreads, file = file.path(params$workDir, paste0("04_correlations_clonesVSreads_",chain,".Rda")))
+
 png(file.path(params$outputDir, paste0("04_correlations_clonesVSreads_", chain, ".png")),
     height = 30, width = 30, units = "cm", res = 300)
 clonesVSreads
@@ -161,6 +167,8 @@ seVScells
 
 ### Plot
 ```{r, results='hide', message=FALSE, warning=FALSE}
+save(seVScells, file = file.path(params$workDir, paste0("04_correlations_seVScells_",chain,".Rda")))
+
 png(file.path(params$outputDir, paste0("04_correlations_seVScells_", chain, ".png")),
     height = 30, width = 30, units = "cm", res = 300)
 seVScells
@@ -187,6 +195,8 @@ seVSclones
 
 ### Plot
 ```{r, results='hide', message=FALSE, warning=FALSE}
+save(seVSclones, file = file.path(params$workDir, paste0("04_correlations_seVSclones_",chain,".Rda")))
+
 png(file.path(params$outputDir, paste0("04_correlations_seVSclones_", chain, ".png")),
     height = 30, width = 30, units = "cm", res = 300)
 seVSclones
@@ -213,6 +223,8 @@ seVSreads
 
 ### Plot
 ```{r, results='hide', message=FALSE, warning=FALSE}
+save(seVSreads, file = file.path(params$workDir, paste0("04_correlations_seVSreads_",chain,".Rda")))
+
 png(file.path(params$outputDir, paste0("04_correlations_seVSreads_", chain, ".png")),
     height = 30, width = 30, units = "cm", res = 300)
 seVSreads
@@ -239,5 +251,3 @@ grid.arrange(readsVScells, clonesVScells, clonesVSreads,
              ncol=3)
 dev.off()
 ```
-
-
