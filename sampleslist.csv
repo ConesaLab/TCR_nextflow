@@ -1,4 +1,4 @@
-SampleID,R1,R2,Group,CellNumber,totalRNA,RIN,NumReads
-CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,control,997312,280.8,,71552850
-Copy-of-CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,a,997312,280.8,,71552850
-Copy2-of-CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,b,997312,280.8,,71552850
+SampleID,R1,R2,Group,CellNumber,totalRNA,NumReads
+CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,control,997312,280.8,71552850
+Copy-of-CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,a,997312,280.8,71552850
+Copy2-of-CD-1,data/reads/CD-1_read1.fastq.gz,data/reads/CD-1_read2.fastq.gz,b,997312,280.8,71552850
