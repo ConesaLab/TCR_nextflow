@@ -314,6 +314,46 @@ process kmers {
     """
 }
 
+/*
+* Step 8. Network analysis
+*/
+process network {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/08_Network",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*")
+    
+    //TODO: fix NMF package in Docker
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/08_network.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
 workflow {
 
    Channel.fromPath("${params.readfiles}")
@@ -349,5 +389,6 @@ workflow {
 
     kmers(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
+    network(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
 }
