@@ -31,9 +31,11 @@ ARG R_DEPS="c('bookdown', \
     'vegan', \
     'viridis' \
     )"
-ARG R_BIOC_DEPS="c('microbiome')"
+ARG R_BIOC_DEPS="c('Biobase', \
+    'microbiome')"
 
 RUN Rscript -e "install.packages(${R_DEPS}, clean=TRUE)" && \
-    Rscript -e "BiocManager::install(${R_BIOC_DEPS})"
+    Rscript -e "BiocManager::install(${R_BIOC_DEPS})" && \
+    Rscript -e "install.packages('NMF')"
 
 CMD ["R"]
