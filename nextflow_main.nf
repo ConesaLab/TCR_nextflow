@@ -59,23 +59,20 @@ process mixcr_qc {
         overwrite: true
 
     input:
-    path(report)
+    path(inputDir)
     path(sampleInfo)
 
     output:
-    path("*.html"), emit: qc_report
-    path(TCRanalysis_articlefigures)
-    path("TCRanalysis_bookdown/*")
+    path("*.html")
+    path("TCRanalysis_bookdown/*"), emit: qc_bookdown
 
     script:
-    // TODO: parametrize sampleLevels
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/01_mixcr_qc.Rmd', \
-    params=list('workDir'=here, \
-    'outputDir'='TCRanalysis_bookdown', \
-    'articleDir'='TCRanalysis_articlefigures', \
-    'sampleInfo'='${sampleInfo}', \
-    'sampleLevels'=c('control', 'withoutMHE', 'withMHE')), \
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/01_mixcr_qc.Rmd',
+    params=list(
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
+        'sampleInfo'='${sampleInfo}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -99,33 +96,324 @@ process data_filtering {
         overwrite: true
 
     input:
-    path(report)
+    path(inputDir)
     path(sampleInfo)
 
     output:
-    path("*.html"), emit: qc_report
-    path("clones_*")
-    path("TCRanalysis_bookdown/*")
-    // TODO: parametrize levels
+    path("*.html")
+    path("clones_*"), emit: filt_clones
+    path("TCRanalysis_bookdown/*"), emit: filt_bookdown
+    
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd', \
-    params=list( \
-        'inputDir'=here, \
-        'workDir'=here,
-        'outputDir'='TCRanalysis_bookdown',
-        'sampleInfo'='${sampleInfo}',
-        'sampleLevels'=c('control', 'withoutMHE', 'withMHE')), \
-        'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
 
+/*
+* Step 3. Dataset overview
+*/
+process dataset_overview {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/03_DatasetOverview",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir1)
+    path(inputDir2)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("03_*Rda")
+    path("TCRanalysis_bookdown/*"), emit: overview_bookdown
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/03_dataset_overview.Rmd',
+    params=list(
+        'inputDir1'=here,
+        'inputDir2'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
+        'sampleInfo'='${sampleInfo}'),
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 4. Correlations
+*/
+process correlations {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/04_Correlations",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("04_*Rda")
+    path("TCRanalysis_bookdown/*"), emit: corr_bookdown
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/04_correlations.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 5. Overlap analysis
+*/
+process overlap {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/05_Overlap",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("05_*Rda")
+    path("TCRanalysis_bookdown/*")
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/05_overlap.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 6. Diversity analysis
+*/
+process diversity {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/06_Diversity",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("06_*Rda")
+    path("TCRanalysis_bookdown/*")
+    
+    //TODO: fix NMF package in Docker
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 7. K-mers analysis
+*/
+process kmers {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/07_Kmers",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("07_*Rda")
+    path("TCRanalysis_bookdown/*")
+    
+    //TODO: fix NMF package in Docker
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/07_kmers.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 8. Network analysis
+*/
+process network {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/08_Network",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+
+    output:
+    path("*.html")
+    path("08_*Rda")
+    path("TCRanalysis_bookdown/*")
+    
+    //TODO: fix NMF package in Docker
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/08_network.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 9. Databases
+*/
+process ddbb {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir/09_Databases",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    publishDir "$params.outdir/TCRanalysis_bookdown/",
+        pattern: 'TCRanalysis_bookdown/*',
+        saveAs: { filename -> Path.of(filename).getName() },
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir)
+    path(sampleInfo)
+    path(mcpas)
+    path(vdjdb)
+
+    output:
+    path("*.html")
+    path("TCRanalysis_bookdown/*")
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/09_ddbb.Rmd', 
+    params=list(
+        'inputDir'=here, 
+        'workDir'=here, 
+        'outputDir'='TCRanalysis_bookdown', 
+        'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}',
+        'specie'='${params.specie}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
 
 workflow {
 
    Channel.fromPath("${params.readfiles}")
             .ifEmpty { exit 1, "File not foud: ${params.readfiles}" }
             .set { sampleInfoChannel }
+
+   Channel.fromPath("${params.mcpas}")
+            .ifEmpty { exit 1, "File not foud: ${params.mcpas}" }
+            .set { mcpasChannel }
+   Channel.fromPath("${params.vdjdb}")
+            .ifEmpty { exit 1, "File not foud: ${params.vdjdb}" }
+            .set { vdjdbChannel }
 
    /*
    * Create a channel that emits tuples containing three elements:
@@ -137,9 +425,26 @@ workflow {
         file(row.R1),
         file(row.R2))}
 
+    /*
+    * Workflow functions
+    */
     mixcr_analyze(samples_channel)
 
     mixcr_qc(mixcr_analyze.out.full_report_chunks.collect(), sampleInfoChannel)
 
     data_filtering(mixcr_analyze.out.all_clonotypes.collect(), sampleInfoChannel)
+
+    dataset_overview(mixcr_qc.out.qc_bookdown.collect(), data_filtering.out.filt_bookdown.collect(), sampleInfoChannel)
+
+    correlations(dataset_overview.out.overview_bookdown.collect(), sampleInfoChannel)
+
+    overlap(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
+
+    diversity(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
+
+    kmers(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
+
+    network(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
+
+    ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
 }

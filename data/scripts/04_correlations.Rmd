@@ -1,0 +1,253 @@
+---
+title: "04 - Correlations"
+author: "Teresa Rubio"
+date: "March, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+  chain: !r NULL
+---
+
+# Packages
+```{r, message=FALSE}
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+require(gridExtra)
+library(grid)
+```
+
+# Work enviroment
+```{r}
+# Define output directory and TCR chain
+dir.create(params$outputDir, recursive=T)
+chain <- params$chain
+
+# Load dataset overview info
+DatasetInfo <- read.table("03_datasetoverview.csv", sep = ",", header = T, check.names = F)
+levels <- unique(DatasetInfo$Group)
+DatasetInfo$Group <- factor(DatasetInfo$Group, levels = levels)
+
+# Color palette for sample groups
+cbPalette <- c("#56B4E9","#CB181D","#000000","#CC79A7","#db6d00","#009E73",
+               "#006ddb","#b66dff","#924900","#490092","#999999","#F0E442")
+```
+
+
+# Correlations
+To examine whether the sequencing depth allowed adequate clonal coverage, we determined the correlation of the number of reads, the number of clones and SE vs. the number of cells and then between reads and clones number, reads number and SE, and clones and SE. Ideally, we expect the number of clones to be independent from the number of reads.
+
+## Number of cells vs amount of RNA
+A previous step as quality control is calculate the correlation between the total number of isolated CD4 cells vs. the total RNA amount extracted. Ideally, a high correlation is expected to be able to send enough RNA for sequencing.
+```{r, message=FALSE, warning=FALSE}
+# Scatter plot with correlation coefficient
+p1 <- ggscatter(DatasetInfo, 
+                x = "CellNumber", 
+                y = "totalRNA",
+                title="Pearson correlation",
+                label = "SampleID",
+                font.label = c(10,"black"),
+                size = 3,
+                add = "reg.line",
+                color = "Group", 
+                palette = cbPalette,
+                conf.int = FALSE) +
+      stat_cor(method = "pearson", aes(color = Group), label.x = 3)  
+
+# plots
+p1
+```
+
+## Read vs. cellnumber
+```{r, message=FALSE, warning=FALSE}
+readsVScells <- ggscatter(DatasetInfo, 
+                          x = paste0(chain,"reads"), 
+                          y = "CellNumber",
+                          label = "SampleID",
+                          font.label = c(10,"black"),
+                          size = 3,
+                          add = "reg.line",
+                          color = "Group", 
+                          palette = cbPalette,
+                          conf.int = FALSE) +
+      stat_cor(method = "pearson", aes(color = Group), label.x = 3)+
+      theme(legend.position = 'none')
+
+readsVScells
+```
+
+### Plot
+```{r, results='hide', message=FALSE, warning=FALSE}
+save(readsVScells, file = file.path(params$workDir, paste0("04_correlations_readsVScells_",chain,".Rda")))
+
+png(file.path(params$outputDir, paste0("04_correlations_readsVScells_", chain, ".png")), 
+    height = 30, width = 30, units = "cm", res = 300)
+readsVScells
+dev.off()
+```
+
+## Clones vs. cellnumber
+```{r, message=FALSE, warning=FALSE}
+clonesVScells <- ggscatter(DatasetInfo, 
+                           x = paste0(chain,"clones"), 
+                           y = "CellNumber",
+                           label = "SampleID",
+                           font.label = c(10,"black"),
+                           size = 3,
+                           add = "reg.line",
+                           color = "Group", 
+                           palette = cbPalette,
+                           conf.int = FALSE) +
+      stat_cor(method = "pearson", aes(color = Group), label.x = 3) +
+      theme(legend.position = 'none') 
+
+clonesVScells
+```
+
+### Plot
+```{r, results='hide', message=FALSE, warning=FALSE}
+save(clonesVScells, file = file.path(params$workDir, paste0("04_correlations_clonesVScells_",chain,".Rda")))
+
+png(file.path(params$outputDir, paste0("04_correlations_clonesVScells_", chain, ".png")),
+    height = 30, width = 30, units = "cm", res = 300)
+clonesVScells
+dev.off()
+```
+
+## Clones vs. reads
+```{r, message=FALSE, warning=FALSE}
+clonesVSreads <- ggscatter(DatasetInfo, 
+                           x = paste0(chain,"clones"), 
+                           y = paste0(chain,"reads"),
+                           label = "SampleID",
+                           font.label = c(10,"black"),
+                           size = 3,
+                           add = "reg.line",
+                           color = "Group", 
+                           palette = cbPalette,
+                           conf.int = FALSE) +
+      stat_cor(method = "pearson", aes(color = Group), label.x = 3) +
+      theme(legend.position = 'right')
+
+clonesVSreads
+```
+
+### Plot
+```{r, results='hide', message=FALSE, warning=FALSE}
+save(clonesVSreads, file = file.path(params$workDir, paste0("04_correlations_clonesVSreads_",chain,".Rda")))
+
+png(file.path(params$outputDir, paste0("04_correlations_clonesVSreads_", chain, ".png")),
+    height = 30, width = 30, units = "cm", res = 300)
+clonesVSreads
+dev.off()
+```
+
+## SE vs. cellnumber
+```{r, message=FALSE, warning=FALSE}
+seVScells <- ggscatter(DatasetInfo, 
+                       x = "CellNumber", 
+                       y =  paste0(chain,"shannon"),
+                       label = "SampleID",
+                       font.label = c(10,"black"),
+                       size = 3,
+                       add = "reg.line",
+                       color = "Group", 
+                       palette = cbPalette,
+                       conf.int = FALSE) +
+      stat_cor(method = "pearson", aes(color = Group), label.x = 3) +
+      theme(legend.position = 'none')
+
+seVScells
+```
+
+### Plot
+```{r, results='hide', message=FALSE, warning=FALSE}
+save(seVScells, file = file.path(params$workDir, paste0("04_correlations_seVScells_",chain,".Rda")))
+
+png(file.path(params$outputDir, paste0("04_correlations_seVScells_", chain, ".png")),
+    height = 30, width = 30, units = "cm", res = 300)
+seVScells
+dev.off()
+```
+
+## SE vs. clones
+```{r, message=FALSE, warning=FALSE}
+seVSclones <- ggscatter(DatasetInfo, 
+                        x =  paste0(chain,"clones"), 
+                        y =  paste0(chain,"shannon"),
+                        label = "SampleID",
+                        font.label = c(10,"black"),
+                        size = 3,
+                        add = "reg.line",
+                        color = "Group", 
+                        palette = cbPalette,
+                        conf.int = FALSE) +
+      stat_cor(method = "pearson", aes(color = Group), label.x = 3) +
+      theme(legend.position = 'none') 
+
+seVSclones
+```
+
+### Plot
+```{r, results='hide', message=FALSE, warning=FALSE}
+save(seVSclones, file = file.path(params$workDir, paste0("04_correlations_seVSclones_",chain,".Rda")))
+
+png(file.path(params$outputDir, paste0("04_correlations_seVSclones_", chain, ".png")),
+    height = 30, width = 30, units = "cm", res = 300)
+seVSclones
+dev.off()
+```
+
+## SE vs. reads
+```{r, message=FALSE, warning=FALSE}
+seVSreads <- ggscatter(DatasetInfo, 
+                       x =  paste0(chain,"reads"), 
+                       y =  paste0(chain,"shannon"),
+                       label = "SampleID",
+                       font.label = c(10,"black"),
+                       size = 3,
+                       add = "reg.line",
+                       color = "Group", 
+                       palette = cbPalette,
+                       conf.int = FALSE) +
+      stat_cor(method = "pearson", aes(color = Group), label.x = 3)  +
+      theme(legend.position = 'none')
+
+seVSreads
+```
+
+### Plot
+```{r, results='hide', message=FALSE, warning=FALSE}
+save(seVSreads, file = file.path(params$workDir, paste0("04_correlations_seVSreads_",chain,".Rda")))
+
+png(file.path(params$outputDir, paste0("04_correlations_seVSreads_", chain, ".png")),
+    height = 30, width = 30, units = "cm", res = 300)
+seVSreads
+dev.off()
+```
+
+
+## Final plot
+This is the final plot to include in the report:
+```{r, results = 'hide', warning=FALSE, message=FALSE}
+# Merged plot
+png(file.path(params$outputDir, paste0("04_correlations_", chain, ".png")), 
+    height = 30, width = 50, units = "cm", res = 300)
+ggpubr::ggarrange(readsVScells, 
+                  clonesVScells, 
+                  clonesVSreads,
+                  seVScells, 
+                  seVSclones, 
+                  seVSreads,
+                  labels = c("A", "B", "C"),
+                  ncol = 3, nrow = 3)
+grid.arrange(readsVScells, clonesVScells, clonesVSreads,
+             seVScells, seVSclones, seVSreads,
+             ncol=3)
+dev.off()
+```

@@ -1,0 +1,77 @@
+---
+title: "07 - Repertoire Similarity (k-mer analysis)"
+author: "Teresa Rubio"
+date: "March, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+  chain: !r NULL
+---
+
+# Packages
+```{r, message=FALSE}
+library(immunarch)
+# library(NMF)
+library(RcmdrMisc)
+library(viridis)
+```
+
+# Work enviroment
+```{r}
+# Define output directory and TCR chain
+sampleInfoFile <- params$sampleInfo
+dir.create(params$outputDir, recursive=T)
+chain <- params$chain
+
+# Load sample info
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T, check.names = F)
+levels <- unique(SampleInfo$Group)
+SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
+
+# Color palette for sample groups
+cbPalette <- c("#56B4E9","#CB181D","#000000","#CC79A7","#db6d00","#009E73",
+               "#006ddb","#b66dff","#924900","#490092","#999999","#F0E442")
+```
+
+# List of repertoires
+```{r}
+# Filtered (reads > 1) MiXCR data
+immdata <- immunarch::repLoad(paste0("clones_",chain,"_filtered"))
+```
+
+# 3-mers (k=3)
+```{r, message=FALSE, results='hide'}
+# k-mer matrix across samples
+kmers_table <- getKmers(immdata$data, .k=3)
+kmers_table <- data.frame(kmers_table)
+rownames(kmers_table) <- kmers_table$Kmer
+kmers_table <- kmers_table[,-1]
+kmers_table[is.na(kmers_table)] <- 0
+
+# correlation
+kmers_cortable <- cor(kmers_table, method = "pearson", use = "complete.obs")
+```
+
+# Outputs
+```{r}
+# Heatmap
+png(file.path(params$outputDir, paste0("07_kmers_heatmap_", chain, ".png")), height = 20, width = 23, units = "cm", res = 300)
+plot(1,2)
+# NMF::aheatmap(pcor,
+#               color = viridis::magma(100),
+#               main = "Kmers - Pearson Correlation",
+#               cexRow = 0.5,
+#               annCol = data.frame(Group = SampleInfo$Group),
+#               annRow = data.frame(Group = SampleInfo$Group),
+#               annColors = list(cbPalette[1:length(levels)]))
+dev.off()
+
+# Tables
+save(kmers_table, file = file.path(params$workDir, paste0("07_kmers_table_", chain, ".Rda")))
+save(kmers_cortable, file = file.path(params$workDir, paste0("07_kmers_cortable_", chain, ".Rda")))
+```

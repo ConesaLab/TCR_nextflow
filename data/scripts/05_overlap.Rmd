@@ -1,0 +1,53 @@
+---
+title: "05 - Clonal Convergence (Overlap)"
+author: "Teresa Rubio"
+date: "March, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+  chain: !r NULL
+---
+
+# Packages
+```{r, message=FALSE}
+library(immunarch)
+library(ggplot2)
+```
+
+# Work enviroment
+```{r}
+# Define output directory and TCR chain
+dir.create(params$outputDir, recursive=T)
+chain <- params$chain
+```
+
+
+# Clonal Convergence (Overlap)
+## Jaccard similarity
+```{r, message=FALSE}
+# Processed MiXCR data
+immdata <- immunarch::repLoad(paste0("clones_",chain,"_filtered"))
+
+# Jaccard similarity
+imm_ov2 <- immunarch::repOverlap(immdata$data, .method = "jaccard", .verbose = F)
+
+# Plot
+jaccard <- immunarch::vis(imm_ov2, .text.size = 2.5, .signif.digits = 1, .title = "CDR3 overlap (jaccard)")
+jaccard
+
+# Jaccard table
+jaccard_table <- imm_ov2
+save(jaccard_table, file = file.path(params$workDir, paste0("05_jaccard_table_", chain, ".Rda")))
+```
+
+# Report plots
+```{r, results='hide'}
+png(file.path(params$outputDir, paste0("05_overlap_jaccard_", chain, ".png")), height = 30, width = 30, units = "cm", res = 300)
+jaccard
+dev.off()
+```

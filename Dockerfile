@@ -11,7 +11,6 @@ RUN apt-get update && \
 
 # Install required R packages
 ARG R_DEPS="c('bookdown', \
-    'devtools', \
     'dplyr', \
     'ggplot2', \
     'ggpubr', \

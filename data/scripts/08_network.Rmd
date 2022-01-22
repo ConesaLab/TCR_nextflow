@@ -1,0 +1,103 @@
+---
+title: "08 - Clonal Architecture (network analysis)"
+author: "Teresa Rubio"
+date: "March, 2021"
+output:
+    html_document:
+      code_folding: hide
+params:
+  inputDir: !r getwd()
+  workDir: !r getwd()
+  outputDir: !r getwd()
+  sampleInfo: !r NULL
+  chain: !r NULL
+---
+
+# Packages
+```{r, message=FALSE}
+library(immunarch)
+library(stringdist)
+library(purrr)
+# library(NMF)
+library(viridis)
+library(ggpubr)
+```
+
+# Work enviroment
+```{r}
+# Define output directory and TCR chain
+sampleInfoFile <- params$sampleInfo
+dir.create(params$outputDir, recursive=T)
+chain <- params$chain
+
+# Load sample info
+SampleInfo <- read.table(sampleInfoFile, sep = ",", header = T, check.names = F)
+levels <- unique(SampleInfo$Group)
+SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
+
+# Color palette for sample groups
+cbPalette <- c("#56B4E9","#CB181D","#000000","#CC79A7","#db6d00","#009E73",
+               "#006ddb","#b66dff","#924900","#490092","#999999","#F0E442")
+```
+
+# List of repertoires
+```{r}
+# Filtered (reads>1) MiXCR data
+immdata <- immunarch::repLoad(paste0("clones_",chain,"_filtered"))
+immdata <- immdata$data
+```
+
+# Network degree
+Here, nodes are clonotypes and an edge is only drawn, if sequences are 1 LV [levenshtein distance] apart. This will created a boolean undirected graph.
+```{r, message=FALSE}
+threshold <- 1
+
+degree <- lapply(names(immdata), function(i){
+  
+    cdr3 <- immdata[[i]]$CDR3.aa
+    classes <- rep(c("Public", "Private"), times = c(2,2))
+    cdr3_dist  <- stringdist::stringdistmatrix(cdr3, method = "lv")
+    
+    cdr3_mat <- as.matrix(cdr3_dist)
+    cdr3_bol <- cdr3_mat
+    cdr3_bol[cdr3_bol<=threshold] <- 1
+    cdr3_bol[cdr3_bol>threshold] <- 0
+    
+    colnames(cdr3_bol) <- as.character(cdr3)
+    rownames(cdr3_bol) <- as.character(cdr3)
+
+    vector_degree <- data.frame(table(rowSums(cdr3_bol) - 1))
+    mean_degree <- mean(c(rep(vector_degree$Var1, vector_degree$Freq)))
+    mean_degree <- data.frame(Var1 = "mean", Freq = mean_degree)
+    
+    return(rbind(vector_degree, mean_degree))
+    
+})
+
+degree <- degree %>% purrr::reduce(full_join, by = "Var1")
+rownames(degree) <- degree[,1]
+degree <- degree[,-1]
+degree <- degree[order(nchar(rownames(degree)), rownames(degree)),]
+colnames(degree) <- names(immdata)
+
+degree <- degree[-nrow(degree),]
+```
+
+# Outputs
+```{r}
+# Heatmap
+png(file.path(params$outputDir, paste0("08_network_heatmap_", chain, ".png")))
+plot(1,2)
+# NMF::aheatmap(degree,
+#               color = viridis::magma(100),
+#               main = "Degree distribution of all clones (public and private)",
+#               Rowv = NA,
+#               cexRow = 0.3,
+#               legend = T,
+#               annCol = data.frame(Group = SampleInfo$Group),
+#               annColors = list(cbPalette[1:length(levels)]))
+dev.off()
+
+# Table
+save(degree, file = file.path(params$workDir, paste0("08_network_table_", chain, ".Rda")))
+```
