@@ -264,7 +264,6 @@ process diversity {
     path("06_*Rda")
     path("TCRanalysis_bookdown/*"), emit: diversity_bookdown
     
-    //TODO: fix NMF package in Docker
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd', 
@@ -305,7 +304,6 @@ process kmers {
     path("07_*Rda")
     path("TCRanalysis_bookdown/*"), emit: kmers_bookdown
     
-    //TODO: fix NMF package in Docker
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/07_kmers.Rmd', 
@@ -346,7 +344,6 @@ process network {
     path("08_*Rda")
     path("TCRanalysis_bookdown/*"), emit: network_bookdown
     
-    //TODO: fix NMF package in Docker
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/08_network.Rmd', 
