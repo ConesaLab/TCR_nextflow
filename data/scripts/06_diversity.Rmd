@@ -15,7 +15,7 @@ params:
 
 # Packages
 ```{r, message=FALSE}
-# library(NMF)
+library(NMF)
 library(vegan)
 library(RcmdrMisc)
 library(viridis)
@@ -54,12 +54,12 @@ diversity_table <- t(t(sapply(data, function(x)
 # Heatmap
 png(file.path(params$outputDir, paste0("06_diversity_heatmap_", chain, ".png")), height = 20, width = 23, units = "cm", res = 300)
 plot(1,2)
-# NMF::aheatmap(cor(diversity_table, method = "pearson"), 
-#               color = viridis::magma(100),
-#               cexRow = 0.4,
-#               annCol = data.frame(Group = SampleInfo$Group),
-#               annRow = data.frame(Group = SampleInfo$Group),
-#               annColors = list(cbPalette[1:length(levels)]))
+NMF::aheatmap(cor(diversity_table, method = "pearson"),
+              color = viridis::magma(100),
+              cexRow = 0.4,
+              annCol = data.frame(Group = SampleInfo$Group),
+              annRow = data.frame(Group = SampleInfo$Group),
+              annColors = list(cbPalette[1:length(levels)]))
 dev.off()
 ```
 

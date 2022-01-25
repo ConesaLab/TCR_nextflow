@@ -9,7 +9,7 @@ Project parameters:
 - BASENAME              : ${params.bn}
 - MANIFEST              : ${params.readfiles}
   """
-
+//TODO: validar input "specie"
 
 /*
 * Step 1.1. TCR quantification using MiXCR
@@ -222,7 +222,7 @@ process overlap {
     output:
     path("*.html")
     path("05_*Rda")
-    path("TCRanalysis_bookdown/*")
+    path("TCRanalysis_bookdown/*"), emit: overlap_bookdown
     
     script:
     """
@@ -262,9 +262,8 @@ process diversity {
     output:
     path("*.html")
     path("06_*Rda")
-    path("TCRanalysis_bookdown/*")
+    path("TCRanalysis_bookdown/*"), emit: diversity_bookdown
     
-    //TODO: fix NMF package in Docker
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd', 
@@ -303,9 +302,8 @@ process kmers {
     output:
     path("*.html")
     path("07_*Rda")
-    path("TCRanalysis_bookdown/*")
+    path("TCRanalysis_bookdown/*"), emit: kmers_bookdown
     
-    //TODO: fix NMF package in Docker
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/07_kmers.Rmd', 
@@ -344,9 +342,8 @@ process network {
     output:
     path("*.html")
     path("08_*Rda")
-    path("TCRanalysis_bookdown/*")
+    path("TCRanalysis_bookdown/*"), emit: network_bookdown
     
-    //TODO: fix NMF package in Docker
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/08_network.Rmd', 
@@ -386,7 +383,7 @@ process ddbb {
 
     output:
     path("*.html")
-    path("TCRanalysis_bookdown/*")
+    path("TCRanalysis_bookdown/*"), emit: ddbb_bookdown
     
     script:
     """
@@ -396,6 +393,51 @@ process ddbb {
         'workDir'=here, 
         'outputDir'='TCRanalysis_bookdown', 
         'sampleInfo'='${sampleInfo}',
+        'chain'='${params.chain}',
+        'specie'='${params.specie}'), 
+    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    """
+}
+
+/*
+* Step 10. Report
+*/
+process report {
+
+    label 'mhecd4tcr'
+
+    publishDir "$params.outdir",
+        pattern: '*',
+        mode: 'copy',
+        overwrite: true
+
+    input:
+    path(inputDir1)
+    path(inputDir2)
+    path(inputDir3)
+    path(inputDir4)
+    path(inputDir5)
+    path(inputDir6)
+    path(inputDir7)
+    path(inputDir8)
+    path(inputDir9)
+
+    output:
+    path("*.html")
+    
+    script:
+    """
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/10_report.Rmd', 
+    params=list(
+        'inputDir1'=here,
+        'inputDir2'=here,
+        'inputDir3'=here,
+        'inputDir4'=here,
+        'inputDir5'=here,
+        'inputDir6'=here,
+        'inputDir7'=here,
+        'inputDir8'=here,
+        'inputDir9'=here,
         'chain'='${params.chain}',
         'specie'='${params.specie}'), 
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
@@ -445,6 +487,10 @@ workflow {
     kmers(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
     network(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
-
+    // TODO: if chain = "TRA" or "TRB", then run this
     ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
+
+    report(mixcr_qc.out.qc_bookdown.collect(), data_filtering.out.filt_bookdown.collect(), dataset_overview.out.overview_bookdown.collect(),
+           correlations.out.corr_bookdown.collect(), overlap.out.overlap_bookdown.collect(), diversity.out.diversity_bookdown.collect(),
+           kmers.out.kmers_bookdown.collect(), network.out.network_bookdown.collect(), ddbb.out.ddbb_bookdown.collect())
 }
