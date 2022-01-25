@@ -9,7 +9,7 @@ Project parameters:
 - BASENAME              : ${params.bn}
 - MANIFEST              : ${params.readfiles}
   """
-
+//TODO: validar input "specie"
 
 /*
 * Step 1.1. TCR quantification using MiXCR
@@ -487,7 +487,7 @@ workflow {
     kmers(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
     network(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
-
+    // TODO: if chain = "TRA" or "TRB", then run this
     ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
 
     report(mixcr_qc.out.qc_bookdown.collect(), data_filtering.out.filt_bookdown.collect(), dataset_overview.out.overview_bookdown.collect(),

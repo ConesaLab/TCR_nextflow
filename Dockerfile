@@ -10,7 +10,8 @@ RUN apt-get update && \
     r-cran-curl
 
 # Install required R packages
-ARG R_DEPS="c('bookdown', \
+ARG R_DEPS="c('BiocManager',
+    'bookdown', \
     'dplyr', \
     'ggplot2', \
     'ggpubr', \
