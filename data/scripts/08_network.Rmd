@@ -90,7 +90,6 @@ png(file.path(params$outputDir, paste0("08_network_heatmap_", chain, ".png")))
 plot(1,2)
 NMF::aheatmap(degree,
               color = viridis::magma(100),
-              main = "Degree distribution of all clones (public and private)",
               Rowv = NA,
               cexRow = 0.3,
               legend = T,

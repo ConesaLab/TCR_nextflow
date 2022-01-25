@@ -62,9 +62,8 @@ kmers_cortable <- cor(kmers_table, method = "pearson", use = "complete.obs")
 # Heatmap
 png(file.path(params$outputDir, paste0("07_kmers_heatmap_", chain, ".png")), height = 20, width = 23, units = "cm", res = 300)
 plot(1,2)
-NMF::aheatmap(pcor,
+NMF::aheatmap(kmers_cortable,
               color = viridis::magma(100),
-              main = "Kmers - Pearson Correlation",
               cexRow = 0.5,
               annCol = data.frame(Group = SampleInfo$Group),
               annRow = data.frame(Group = SampleInfo$Group),
