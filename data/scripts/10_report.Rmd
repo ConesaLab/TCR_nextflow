@@ -5,16 +5,7 @@ date: "March, 2021"
 output:
   bookdown::html_document2: default
 params:
-  inputDir1: !r getwd()
-  inputDir2: !r getwd()
-  inputDir3: !r getwd()
-  inputDir4: !r getwd()
-  inputDir5: !r getwd()
-  inputDir6: !r getwd()
-  inputDir7: !r getwd()
-  inputDir8: !r getwd()
-  inputDir9: !r getwd()
-
+  inputDir: !r getwd()
   chain: !r NULL
   specie: !r NULL
 ---

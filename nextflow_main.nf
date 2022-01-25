@@ -9,7 +9,7 @@ Project parameters:
 - BASENAME              : ${params.bn}
 - MANIFEST              : ${params.readfiles}
   """
-//TODO: validar input "specie"
+
 
 /*
 * Step 1.1. TCR quantification using MiXCR
@@ -103,15 +103,15 @@ process data_filtering {
     path("*.html")
     path("clones_*"), emit: filt_clones
     path("TCRanalysis_bookdown/*"), emit: filt_bookdown
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd',
     params=list(
-        'inputDir'=here, 
-        'workDir'=here, 
-        'outputDir'='TCRanalysis_bookdown', 
-        'sampleInfo'='${sampleInfo}'), 
+        'inputDir'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
+        'sampleInfo'='${sampleInfo}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -143,7 +143,7 @@ process dataset_overview {
     path("*.html")
     path("03_*Rda")
     path("TCRanalysis_bookdown/*"), emit: overview_bookdown
-    
+
     script:
     """
     Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/03_dataset_overview.Rmd',
@@ -183,16 +183,16 @@ process correlations {
     path("*.html")
     path("04_*Rda")
     path("TCRanalysis_bookdown/*"), emit: corr_bookdown
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/04_correlations.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/04_correlations.Rmd',
     params=list(
-        'inputDir'=here, 
-        'workDir'=here, 
-        'outputDir'='TCRanalysis_bookdown', 
+        'inputDir'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
         'sampleInfo'='${sampleInfo}',
-        'chain'='${params.chain}'), 
+        'chain'='${params.chain}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -223,16 +223,16 @@ process overlap {
     path("*.html")
     path("05_*Rda")
     path("TCRanalysis_bookdown/*"), emit: overlap_bookdown
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/05_overlap.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/05_overlap.Rmd',
     params=list(
-        'inputDir'=here, 
-        'workDir'=here, 
-        'outputDir'='TCRanalysis_bookdown', 
+        'inputDir'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
         'sampleInfo'='${sampleInfo}',
-        'chain'='${params.chain}'), 
+        'chain'='${params.chain}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -263,16 +263,16 @@ process diversity {
     path("*.html")
     path("06_*Rda")
     path("TCRanalysis_bookdown/*"), emit: diversity_bookdown
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd',
     params=list(
-        'inputDir'=here, 
-        'workDir'=here, 
-        'outputDir'='TCRanalysis_bookdown', 
+        'inputDir'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
         'sampleInfo'='${sampleInfo}',
-        'chain'='${params.chain}'), 
+        'chain'='${params.chain}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -303,16 +303,16 @@ process kmers {
     path("*.html")
     path("07_*Rda")
     path("TCRanalysis_bookdown/*"), emit: kmers_bookdown
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/07_kmers.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/07_kmers.Rmd',
     params=list(
-        'inputDir'=here, 
-        'workDir'=here, 
-        'outputDir'='TCRanalysis_bookdown', 
+        'inputDir'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
         'sampleInfo'='${sampleInfo}',
-        'chain'='${params.chain}'), 
+        'chain'='${params.chain}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -343,16 +343,16 @@ process network {
     path("*.html")
     path("08_*Rda")
     path("TCRanalysis_bookdown/*"), emit: network_bookdown
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/08_network.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/08_network.Rmd',
     params=list(
-        'inputDir'=here, 
-        'workDir'=here, 
-        'outputDir'='TCRanalysis_bookdown', 
+        'inputDir'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
         'sampleInfo'='${sampleInfo}',
-        'chain'='${params.chain}'), 
+        'chain'='${params.chain}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -384,17 +384,17 @@ process ddbb {
     output:
     path("*.html")
     path("TCRanalysis_bookdown/*"), emit: ddbb_bookdown
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/09_ddbb.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/09_ddbb.Rmd',
     params=list(
-        'inputDir'=here, 
-        'workDir'=here, 
-        'outputDir'='TCRanalysis_bookdown', 
+        'inputDir'=here,
+        'workDir'=here,
+        'outputDir'='TCRanalysis_bookdown',
         'sampleInfo'='${sampleInfo}',
         'chain'='${params.chain}',
-        'specie'='${params.specie}'), 
+        'specie'='${params.specie}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
@@ -412,52 +412,44 @@ process report {
         overwrite: true
 
     input:
-    path(inputDir1)
-    path(inputDir2)
-    path(inputDir3)
-    path(inputDir4)
-    path(inputDir5)
-    path(inputDir6)
-    path(inputDir7)
-    path(inputDir8)
-    path(inputDir9)
+    path(inputs)
 
     output:
     path("*.html")
-    
+
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/10_report.Rmd', 
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/10_report.Rmd',
     params=list(
-        'inputDir1'=here,
-        'inputDir2'=here,
-        'inputDir3'=here,
-        'inputDir4'=here,
-        'inputDir5'=here,
-        'inputDir6'=here,
-        'inputDir7'=here,
-        'inputDir8'=here,
-        'inputDir9'=here,
+        'inputDir'=here,
         'chain'='${params.chain}',
-        'specie'='${params.specie}'), 
+        'specie'='${params.specie}'),
     'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
     """
 }
 
 workflow {
 
-   Channel.fromPath("${params.readfiles}")
+    // Input validation
+    def valid_species = ['Human','Mouse']
+    is_valid_specie = params.specie in valid_species
+    if (!is_valid_specie) {
+        log.error "`params.specie` must be one of ${valid_species}"
+        exit 1, "`params.specie` must be one of ${valid_species}"
+    }
+
+    Channel.fromPath("${params.readfiles}")
             .ifEmpty { exit 1, "File not foud: ${params.readfiles}" }
             .set { sampleInfoChannel }
 
-   Channel.fromPath("${params.mcpas}")
+    Channel.fromPath("${params.mcpas}")
             .ifEmpty { exit 1, "File not foud: ${params.mcpas}" }
             .set { mcpasChannel }
-   Channel.fromPath("${params.vdjdb}")
+    Channel.fromPath("${params.vdjdb}")
             .ifEmpty { exit 1, "File not foud: ${params.vdjdb}" }
             .set { vdjdbChannel }
 
-   /*
+    /*
    * Create a channel that emits tuples containing three elements:
    * the SampleID, the first read-pair file and the second read-pair file
    */
@@ -470,6 +462,7 @@ workflow {
     /*
     * Workflow functions
     */
+
     mixcr_analyze(samples_channel)
 
     mixcr_qc(mixcr_analyze.out.full_report_chunks.collect(), sampleInfoChannel)
@@ -487,10 +480,25 @@ workflow {
     kmers(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
     network(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
-    // TODO: if chain = "TRA" or "TRB", then run this
-    ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
 
-    report(mixcr_qc.out.qc_bookdown.collect(), data_filtering.out.filt_bookdown.collect(), dataset_overview.out.overview_bookdown.collect(),
-           correlations.out.corr_bookdown.collect(), overlap.out.overlap_bookdown.collect(), diversity.out.diversity_bookdown.collect(),
-           kmers.out.kmers_bookdown.collect(), network.out.network_bookdown.collect(), ddbb.out.ddbb_bookdown.collect())
+    if (params.chain in ['TRA', 'TRB']) {
+        ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
+        ddbb_bookdown = ddbb.out.ddbb_bookdown
+    } else {
+        ddbb_bookdown = Channel.empty()
+    }
+
+    report(
+        mixcr_qc.out.qc_bookdown
+        .mix(data_filtering.out.filt_bookdown)
+        .mix(dataset_overview.out.overview_bookdown)
+        .mix(correlations.out.corr_bookdown)
+        .mix(overlap.out.overlap_bookdown)
+        .mix(diversity.out.diversity_bookdown)
+        .mix(kmers.out.kmers_bookdown)
+        .mix(network.out.network_bookdown)
+        .mix(ddbb_bookdown)
+        .collect()
+    )
+
 }
