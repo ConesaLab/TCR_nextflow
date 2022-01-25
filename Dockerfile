@@ -10,7 +10,9 @@ RUN apt-get update && \
     r-cran-curl
 
 # Install required R packages
-ARG R_DEPS="c('bookdown', \
+ARG R_DEPS="c( \
+    'BiocManager', \
+    'bookdown', \
     'dplyr', \
     'ggplot2', \
     'ggpubr', \
@@ -18,7 +20,6 @@ ARG R_DEPS="c('bookdown', \
     'gridExtra', \
     'immunarch', \
     'microbiome', \
-    'NMF', \
     'openxlsx', \
     'purrr', \
     'RcmdrMisc', \
@@ -30,11 +31,11 @@ ARG R_DEPS="c('bookdown', \
     'vegan', \
     'viridis' \
     )"
-ARG R_BIOC_DEPS="c('Biobase', \
+ARG R_BIOC_DEPS="c( \
+    'Biobase', \
     'microbiome')"
 
 RUN Rscript -e "install.packages(${R_DEPS}, clean=TRUE)" && \
-    Rscript -e "BiocManager::install(${R_BIOC_DEPS})" && \
-    Rscript -e "install.packages('NMF')"
-
+    Rscript -e "BiocManager::install(${R_BIOC_DEPS})"  && \
+    Rscript -e "install.packages('NMF', clean=TRUE)"
 CMD ["R"]
