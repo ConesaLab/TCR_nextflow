@@ -490,7 +490,7 @@ workflow {
 
     ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
 
-    //report(mixcr_qc.out.qc_bookdown.collect(), data_filtering.out.filt_bookdown.collect(), dataset_overview.out.overview_bookdown.collect(),
-    //       correlations.out.corr_bookdown.collect(), overlap.out.overlap_bookdown.collect(), diversity.out.diversity_bookdown.collect(),
-    //       kmers.out.kmers_bookdown.collect(), network.out.network_bookdown.collect(), ddbb.out.ddbb_bookdown.collect())
+    report(mixcr_qc.out.qc_bookdown.collect(), data_filtering.out.filt_bookdown.collect(), dataset_overview.out.overview_bookdown.collect(),
+           correlations.out.corr_bookdown.collect(), overlap.out.overlap_bookdown.collect(), diversity.out.diversity_bookdown.collect(),
+           kmers.out.kmers_bookdown.collect(), network.out.network_bookdown.collect(), ddbb.out.ddbb_bookdown.collect())
 }

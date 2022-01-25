@@ -8,6 +8,13 @@ params:
   inputDir1: !r getwd()
   inputDir2: !r getwd()
   inputDir3: !r getwd()
+  inputDir4: !r getwd()
+  inputDir5: !r getwd()
+  inputDir6: !r getwd()
+  inputDir7: !r getwd()
+  inputDir8: !r getwd()
+  inputDir9: !r getwd()
+
   chain: !r NULL
   specie: !r NULL
 ---
@@ -16,12 +23,7 @@ params:
 ```{r, warning=F, message=FALSE}
 library(bookdown)
 library(ggplot2)
-params$inputDir1
-params$inputDir2
 
-params$inputDir3
-params$chain
-params$specie
 ```
 
 <!-- # 1 - MiXCR quality control {.tabset} -->
