@@ -15,7 +15,7 @@ Project parameters:
 * Step 1.1. TCR quantification using MiXCR
 */
 process mixcr_analyze {
-
+    cpus "$params.cpus"
     tag "$SampleID"
     label "mixcr"
 
@@ -34,6 +34,7 @@ process mixcr_analyze {
     script:
     """
     mixcr analyze shotgun -t $task.cpus --species $params.specie --starting-material rna --only-productive \
+    --align "-OsaveOriginalReads=true" \
     ${R1} ${R2} ${SampleID}
     csplit -f ${SampleID}.report ${SampleID}.report '/^==/' '{*}' > mixcr_qc.log
     """
@@ -44,7 +45,6 @@ process mixcr_analyze {
 */
 process mixcr_qc {
 
-    cpus 1
     label 'mhecd4tcr'
 
     publishDir "$params.outdir/01_MiXCR",
