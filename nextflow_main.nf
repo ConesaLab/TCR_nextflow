@@ -413,18 +413,20 @@ process report {
 
     input:
     path(inputs)
+    path(report_rmd)
 
     output:
     path("*.html")
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/10_report.Rmd',
-    params=list(
-        'inputDir'=here,
-        'chain'='${params.chain}',
-        'specie'='${params.specie}'),
-    'output_dir'= here, 'knit_root_dir'=here, quiet=TRUE)"
+    Rscript -e "bookdown::render_book(
+                    input='${report_rmd}',
+                    params=list(
+                        'inputDir'=getwd(),
+                        'chain'='${params.chain}',
+                        'specie'='${params.specie}'))"
+    mv _main.html final-report.html
     """
 }
 
@@ -498,7 +500,8 @@ workflow {
         .mix(kmers.out.kmers_bookdown)
         .mix(network.out.network_bookdown)
         .mix(ddbb_bookdown)
-        .collect()
+        .collect(),
+        file('data/scripts/10_report.Rmd')
     )
 
 }
