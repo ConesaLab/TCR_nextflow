@@ -232,20 +232,20 @@ p1_readsTRB
 Final plots of the number of reads in TCR, TRA and TRB.
 ```{r, results='hide'}
 # TCR plot
-save(p1_readsTCR, file = file.path(params$workDir, "03_boxplot3_readsTCR.Rda"))
-png(file.path(params$outputDir, "03_boxplot3_readsTCR.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_readsTCR, file = file.path(params$workDir, "03_boxplot3_reads_TCR.Rda"))
+png(file.path(params$outputDir, "03_boxplot3_reads_TCR.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_readsTCR
 dev.off()
 
 # TRA plot
-save(p1_readsTRA, file = file.path(params$workDir, "03_boxplot3_readsTRA.Rda"))
-png(file.path(params$outputDir, "03_boxplot3_readsTRA.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_readsTRA, file = file.path(params$workDir, "03_boxplot3_reads_TRA.Rda"))
+png(file.path(params$outputDir, "03_boxplot3_reads_TRA.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_readsTRA
 dev.off()
 
 # TRB plot
-save(p1_readsTRB, file = file.path(params$workDir, "03_boxplot3_readsTRB.Rda"))
-png(file.path(params$outputDir, "03_boxplot3_readsTRB.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_readsTRB, file = file.path(params$workDir, "03_boxplot3_reads_TRB.Rda"))
+png(file.path(params$outputDir, "03_boxplot3_reads_TRB.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_readsTRB
 dev.off()
 ```
@@ -362,20 +362,20 @@ p1_clones_filtered_TRB
 Final plots of the number of clones in TCR, TRA and TRB.
 ```{r, results='hide'}
 # TCR plot
-save(p1_clones_filtered_TCR, file = file.path(params$workDir, "03_boxplot4_clonesTCR.Rda"))
-png(file.path(params$outputDir, "03_boxplot4_clonesTCR.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_clones_filtered_TCR, file = file.path(params$workDir, "03_boxplot4_clones_TCR.Rda"))
+png(file.path(params$outputDir, "03_boxplot4_clones_TCR.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_clones_filtered_TCR
 dev.off()
 
 # TRA plot
-save(p1_clones_filtered_TRA, file = file.path(params$workDir, "03_boxplot4_clonesTRA.Rda"))
-png(file.path(params$outputDir, "03_boxplot4_clonesTRA.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_clones_filtered_TRA, file = file.path(params$workDir, "03_boxplot4_clones_TRA.Rda"))
+png(file.path(params$outputDir, "03_boxplot4_clones_TRA.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_clones_filtered_TRA
 dev.off()
 
 # TRB plot
-save(p1_clones_filtered_TRB, file = file.path(params$workDir, "03_boxplot4_clonesTRB.Rda"))
-png(file.path(params$outputDir, "03_boxplot4_clonesTRB.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_clones_filtered_TRB, file = file.path(params$workDir, "03_boxplot4_clones_TRB.Rda"))
+png(file.path(params$outputDir, "03_boxplot4_clones_TRB.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_clones_filtered_TRB
 dev.off()
 ```
@@ -459,20 +459,20 @@ p1_shannon_filtered_TRB
 Final plots of the Shannon eveness in TCR, TRA and TRB clones.
 ```{r, results='hide'}
 # TCR plot
-save(p1_shannon_filtered_TCR, file = file.path(params$workDir, "03_boxplot5_shannonTCR.Rda"))
-png(file.path(params$outputDir, "03_boxplot5_shannonTCR.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_shannon_filtered_TCR, file = file.path(params$workDir, "03_boxplot5_shannon_TCR.Rda"))
+png(file.path(params$outputDir, "03_boxplot5_shannon_TCR.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_shannon_filtered_TCR
 dev.off()
 
 # TRA plot
-save(p1_shannon_filtered_TRA, file = file.path(params$workDir, "03_boxplot5_shannonTRA.Rda"))
-png(file.path(params$outputDir, "03_boxplot5_shannonTRA.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_shannon_filtered_TRA, file = file.path(params$workDir, "03_boxplot5_shannon_TRA.Rda"))
+png(file.path(params$outputDir, "03_boxplot5_shannon_TRA.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_shannon_filtered_TRA
 dev.off()
 
 # TRB plot
-save(p1_shannon_filtered_TRB, file = file.path(params$workDir, "03_boxplot5_shannonTRB.Rda"))
-png(file.path(params$outputDir, "03_boxplot5_shannonTRB.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_shannon_filtered_TRB, file = file.path(params$workDir, "03_boxplot5_shannon_TRB.Rda"))
+png(file.path(params$outputDir, "03_boxplot5_shannon_TRB.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_shannon_filtered_TRB
 dev.off()
 ```
