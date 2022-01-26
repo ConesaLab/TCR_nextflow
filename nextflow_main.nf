@@ -433,7 +433,7 @@ process report {
 workflow {
 
     // Input validation
-    def valid_species = ['Human','Mouse']
+    def valid_species = ['HomoSapiens','MusMusculus']
     is_valid_specie = params.specie in valid_species
     if (!is_valid_specie) {
         log.error "`params.specie` must be one of ${valid_species}"
