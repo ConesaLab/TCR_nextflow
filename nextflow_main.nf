@@ -33,7 +33,7 @@ process mixcr_analyze {
 
     script:
     """
-    mixcr analyze shotgun -t $task.cpus --species hs --starting-material rna --only-productive \
+    mixcr analyze shotgun -t $task.cpus --species $params.specie --starting-material rna --only-productive \
     ${R1} ${R2} ${SampleID}
     csplit -f ${SampleID}.report ${SampleID}.report '/^==/' '{*}' > mixcr_qc.log
     """
@@ -433,7 +433,7 @@ process report {
 workflow {
 
     // Input validation
-    def valid_species = ['Human','Mouse']
+    def valid_species = ['HomoSapiens','MusMusculus']
     is_valid_specie = params.specie in valid_species
     if (!is_valid_specie) {
         log.error "`params.specie` must be one of ${valid_species}"

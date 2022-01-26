@@ -48,7 +48,12 @@ mcpas_db$Pathology <- gsub("Hepatitis C virus \\(HCV\\)", "Hepatitis C virus", m
 mcpas_db$Pathology <- gsub("HTLV-1 \\(Chronic", "HTLV-1", mcpas_db$Pathology)
 mcpas_db$Pathology <- gsub("Psoriatic arthritis", "Psoriatic Arthritis", mcpas_db$Pathology)
 # Filtering database
-mcpas_db_specie <- subset(mcpas_db, Species == params$specie & nchar(CDR3.beta.aa) > 4)
+if (params$specie == "HomoSapiens") {
+  specie <- "Human"
+} else {
+  specie <- "Mouse"
+}
+mcpas_db_specie <- subset(mcpas_db, Species == specie & nchar(CDR3.beta.aa) > 4)
 # mcpas_db_specie <- subset(mcpas_db_specie, Category == "Autoimmune" | Category == "Pathogens")
 mcpas_db_specie <- subset(mcpas_db_specie, !is.na(Pathology))
 ```
@@ -59,13 +64,7 @@ Downloaded on: March 12, 2021. #January 21, 2022
 ```{r}
 VDJdb <- read.delim("VDJdb-TCR.tsv")
 
-if (params$specie == "Human") {
-  specie <- "HomoSapiens"
-} else {
-  specie <- "MusMusculus"
-}
-
-vdjdb_specie <- subset(VDJdb, Species == specie & nchar(CDR3) > 4)
+vdjdb_specie <- subset(VDJdb, Species == params$specie & nchar(CDR3) > 4)
 vdjdb_specie <- subset(vdjdb_specie, Gene == chain)
 vdjdb_specie <- subset(vdjdb_specie, !is.na(Epitope.species))
 ```
