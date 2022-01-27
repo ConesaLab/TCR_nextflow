@@ -16,6 +16,9 @@ Project parameters:
 */
 process mixcr_analyze {
     cpus "$params.cpus"
+    memory "$params.memory"
+    time "$params.time"
+
     tag "$SampleID"
     label "mixcr"
 
