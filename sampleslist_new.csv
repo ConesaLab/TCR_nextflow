@@ -1,0 +1,4 @@
+SampleID,R1,R2,Group,CellNumber,totalRNA,NumReads
+CD-6,data/reads/CD-6_read1.fastq,data/reads/CD-6_read2.fastq,C,1080000,635,74668930
+Copy-of-CD-6,data/reads/CD-6_read1.fastq,data/reads/CD-6_read2.fastq,B,1080000,635,74668930
+CD-5,data/reads/CD-5_read1.fastq,data/reads/CD-5_read2.fastq,A,469600,457.92,71839922
