@@ -57,7 +57,7 @@ process mixcr_qc {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
@@ -94,7 +94,6 @@ process data_filtering {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
         mode: 'copy',
         overwrite: true
 
@@ -133,7 +132,7 @@ process dataset_overview {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
@@ -174,7 +173,7 @@ process correlations {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
@@ -214,7 +213,7 @@ process overlap {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
@@ -254,7 +253,7 @@ process diversity {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
@@ -294,7 +293,7 @@ process kmers {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
@@ -334,7 +333,7 @@ process network {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
@@ -374,7 +373,7 @@ process ddbb {
 
     publishDir "$params.outdir/TCRanalysis_bookdown/",
         pattern: 'TCRanalysis_bookdown/*',
-        saveAs: { filename -> Path.of(filename).getName() },
+        saveAs: { filename -> filename.replaceFirst('TCRanalysis_bookdown/','')},
         mode: 'copy',
         overwrite: true
 
