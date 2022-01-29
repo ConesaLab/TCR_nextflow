@@ -53,13 +53,6 @@ knitr::include_graphics(path = path.expand("01_assemble_plot.png"))
 # Clones filtering {.tabset}
 Functional clonotypes (referring to unique sequences of VDJRegion(nt) after excluding out-of-frames and sequences containing stop codons) were only included in the analysis if they had a minimal abundance read of 2 read counts and their CDR3s were of 4 amino acids minimal length as previously described (R. Amoriello et al., 2020).
 
-## Summary table TCR filtering
-```{r plot2-1,include= TRUE,  echo = F, message= F}
-table2 <- read.delim("02_filtering-evenness_summarytable_TCR.csv", check.names = FALSE)
-table2$`Shannon-Evenness` <- round(table2$`Shannon-Evenness`, 3)
-colnames(table2)[1] <- "SampleID"
-knitr::kable(table2)
-```
 ## Summary table TRA filtering
 ```{r plot2-2,include= TRUE,  echo = F, message= F}
 table2 <- read.delim("02_filtering-evenness_summarytable_TRA.csv", check.names = FALSE)

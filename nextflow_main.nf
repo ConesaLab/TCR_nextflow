@@ -485,12 +485,7 @@ workflow {
 
     network(data_filtering.out.filt_clones.collect(), sampleInfoChannel)
 
-    if (params.chain in ['TRA', 'TRB']) {
-        ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
-        ddbb_bookdown = ddbb.out.ddbb_bookdown
-    } else {
-        ddbb_bookdown = Channel.empty()
-    }
+    ddbb(data_filtering.out.filt_clones.collect(), sampleInfoChannel, mcpasChannel, vdjdbChannel)
 
     report(
         mixcr_qc.out.qc_bookdown
@@ -501,7 +496,7 @@ workflow {
         .mix(diversity.out.diversity_bookdown)
         .mix(kmers.out.kmers_bookdown)
         .mix(network.out.network_bookdown)
-        .mix(ddbb_bookdown)
+        .mix(ddbb.out.ddbb_bookdown)
         .collect(),
         file('data/scripts/10_report.Rmd')
     )
