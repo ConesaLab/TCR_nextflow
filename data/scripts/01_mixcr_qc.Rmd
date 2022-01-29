@@ -75,7 +75,9 @@ write.table(alignment_reports, file = file.path(params$outputDir, "01_alignment_
 df_matrix <- tibble::as_tibble(alignment_reports)
 df_matrix$patientID <- factor(df_matrix$patientID, levels=df_matrix$patientID)
 
-df_gather_chains <- tidyr::gather(data = df_matrix[,c(1,14:18,20,21)],
+df_gather_chains <- tidyr::gather(data = df_matrix[,c("patientID","TRA chains","TRB chains",
+                                                      "TRD chains","TRG chains","IGH chains"
+                                                      "IGK chains", "IGL chains")],
                                   key = "parameter", value = "reads", -1)
 df_gather_chains$parameter <- factor(df_gather_chains$parameter,
                                      levels = unique(df_gather_chains$parameter))
@@ -146,7 +148,9 @@ df_matrix_assemble <- df_matrix_assemble[c(ncol(df_matrix_assemble),1:ncol(df_ma
 df_matrix_assemble <- tibble::as_tibble(df_matrix_assemble)
 df_matrix_assemble$patient <- factor(df_matrix_assemble$patient, levels=df_matrix_assemble$patient)
 
-df_gather_chains <- tidyr::gather(data = df_matrix_assemble[,c(1,18:24)],
+df_gather_chains <- tidyr::gather(data = df_matrix_assemble[,c("patientID","TRA chains","TRB chains",
+                                                      "TRD chains","TRG chains","IGH chains"
+                                                      "IGK chains", "IGL chains")],
                                   key = "parameter", value = "reads", -1)
 df_gather_chains$parameter <- factor(df_gather_chains$parameter,
                                      levels = unique(df_gather_chains$parameter))
