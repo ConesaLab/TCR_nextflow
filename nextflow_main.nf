@@ -6,8 +6,11 @@ log.info """\
 RNASeq - TCR Pipeline
 ===================================
 Project parameters:
-- BASENAME              : ${params.bn}
-- MANIFEST              : ${params.readfiles}
+- Project Name          : ${params.pn}
+- Sample List           : ${params.readfiles}
+- Specie                : ${params.specie}
+- Selected TCR chain    : ${params.chain}
+- Output Directory      : ${params.outdir}
   """
 
 
