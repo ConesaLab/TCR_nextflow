@@ -22,8 +22,7 @@ chain <- params$chain
 ## Alignment report
 ```{r plot1,include= TRUE,  echo = F, message= F}
 table1 <- read.delim("01_alignment_reports.tsv", check.names = FALSE)
-table1 <- table1[,c("sampleID",	"Total sequencing reads",	"Successfully aligned reads")]
-colnames(table1)[1] <- "SampleID"
+table1 <- table1[,c("SampleID",	"Total sequencing reads",	"Successfully aligned reads")]
 Percentage <- round(table1$`Successfully aligned reads`/table1$`Total sequencing reads`*100, 3)
 table1 <- cbind(table1, Percentage)
 knitr::kable(table1)
@@ -36,8 +35,7 @@ knitr::include_graphics(path = path.expand("01_alignment_plot.png"))
 ## Assemble report
 ```{r plot1-3,include= TRUE,  echo = F, message= F}
 table2 <- read.delim("01_assemble_reports.tsv", check.names = FALSE)
-table2 <- table2[,c("sampleID",	"Final clonotype count", "Reads used in clonotypes, percent of total")]
-colnames(table2)[1] <- "SampleID"
+table2 <- table2[,c("SampleID",	"Final clonotype count", "Reads used in clonotypes, percent of total")]
 colnames(table2)[3] <- "Reads used in clonotypes"
 knitr::kable(table2)
 ```
@@ -57,14 +55,12 @@ Functional clonotypes (referring to unique sequences of VDJRegion(nt) after excl
 ```{r plot2-2,include= TRUE,  echo = F, message= F}
 table2 <- read.delim("02_filtering-evenness_summarytable_TRA.csv", check.names = FALSE)
 table2$`Shannon-Evenness` <- round(table2$`Shannon-Evenness`, 3)
-colnames(table2)[1] <- "SampleID"
 knitr::kable(table2)
 ```
 ## Summary table TRB filtering
 ```{r plot2-3,include= TRUE,  echo = F, message= F}
 table2 <- read.delim("02_filtering-evenness_summarytable_TRB.csv", check.names = FALSE)
 table2$`Shannon-Evenness` <- round(table2$`Shannon-Evenness`, 3)
-colnames(table2)[1] <- "SampleID"
 knitr::kable(table2)
 ```
 

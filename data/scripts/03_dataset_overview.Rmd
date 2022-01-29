@@ -141,12 +141,12 @@ Here we represent the successfully aligned reads to TCA (alpha chain) that mixcr
 alignment_reports <- read.delim("01_alignment_reports.tsv")
 
 # Calculating all TRA reads
-TRA_reads <- alignment_reports[,c("sampleID", "TRA.chains")]
+TRA_reads <- alignment_reports[,c("SampleID", "TRA.chains")]
 colnames(TRA_reads)[2] <- "TRAreads"
 
 # Add one column to SampleInfo
-SampleInfo <- merge(SampleInfo, TRA_reads[,c("sampleID", "TRAreads")],
-                    by.x = "SampleID", by.y = "sampleID", sort = F)
+SampleInfo <- merge(SampleInfo, TRA_reads[,c("SampleID", "TRAreads")],
+                    by.x = "SampleID", by.y = "SampleID", sort = F)
 
 # Kruskal-Wallis test
 p1_readsTRA <- ggboxplot(SampleInfo,
@@ -170,12 +170,12 @@ p1_readsTRA
 Here we represent the successfully aligned reads to TRB (beta chain) that mixcr found.
 ```{r}
 # Calculating all TRB reads
-TRB_reads <- alignment_reports[,c("sampleID", "TRB.chains")]
+TRB_reads <- alignment_reports[,c("SampleID", "TRB.chains")]
 colnames(TRB_reads)[2] <- "TRBreads"
 
 # Add one column to SampleInfo
-SampleInfo <- merge(SampleInfo, TRB_reads[,c("sampleID", "TRBreads")],
-                    by.x = "SampleID", by.y = "sampleID", sort = F)
+SampleInfo <- merge(SampleInfo, TRB_reads[,c("SampleID", "TRBreads")],
+                    by.x = "SampleID", by.y = "SampleID", sort = F)
 
 # Kruskal-Wallis test
 p1_readsTRB <- ggboxplot(SampleInfo,
