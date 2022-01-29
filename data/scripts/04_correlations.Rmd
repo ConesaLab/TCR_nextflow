@@ -151,7 +151,7 @@ dev.off()
 ```{r, message=FALSE, warning=FALSE}
 seVScells <- ggscatter(DatasetInfo, 
                        x = "CellNumber", 
-                       y =  paste0(chain,"shannon"),
+                       y =  paste0(chain,"shannonevenness"),
                        label = "SampleID",
                        font.label = c(10,"black"),
                        size = 3,
@@ -179,7 +179,7 @@ dev.off()
 ```{r, message=FALSE, warning=FALSE}
 seVSclones <- ggscatter(DatasetInfo, 
                         x =  paste0(chain,"clones"), 
-                        y =  paste0(chain,"shannon"),
+                        y =  paste0(chain,"shannonevenness"),
                         label = "SampleID",
                         font.label = c(10,"black"),
                         size = 3,
@@ -207,7 +207,7 @@ dev.off()
 ```{r, message=FALSE, warning=FALSE}
 seVSreads <- ggscatter(DatasetInfo, 
                        x =  paste0(chain,"reads"), 
-                       y =  paste0(chain,"shannon"),
+                       y =  paste0(chain,"shannonevenness"),
                        label = "SampleID",
                        font.label = c(10,"black"),
                        size = 3,

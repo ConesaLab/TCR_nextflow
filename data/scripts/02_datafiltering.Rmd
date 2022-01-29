@@ -57,15 +57,15 @@ clonotypes_tcr <- lapply(clonotypes_all, function(i){
   })
 
 # Summary of filter criteria
-summary_table_tcr <- do.call(rbind, lapply(names(clonotypes_tcr), function(i){
+summary_table_TCR <- do.call(rbind, lapply(names(clonotypes_tcr), function(i){
   table = clonotypes_tcr[[i]]
   sample = i
   TCRclones = nrow(table)
+  CDR3aa_minlength = min(nchar(clonotypes_tcr[[i]]$aaSeqCDR3))
   filterby_readcount = nrow(table[table$cloneCount >= 2,])
-  min_CDR3aa = min(nchar(clonotypes_tcr[[i]]$aaSeqCDR3))
   filterby_CDR3aa = nrow(table[nchar(table$aaSeqCDR3) >= 4,])
   filterby_both = nrow(table[table$cloneCount >= 2 & nchar(table$aaSeqCDR3) >= 4,])
-  cbind(sample,TCRclones,filterby_readcount,min_CDR3aa,filterby_CDR3aa,filterby_both)
+  cbind(sample,TCRclones,filterby_readcount,CDR3aa_minlength,filterby_CDR3aa,filterby_both)
   }))
 
 # Filtering and output
@@ -96,11 +96,11 @@ summary_table_TRA <- do.call(rbind, lapply(names(clonotypes_TRA), function(i){
   table = clonotypes_TRA[[i]]
   sample = i
   TRAclones = nrow(table)
+  CDR3aa_minlength = min(nchar(clonotypes_TRA[[i]]$aaSeqCDR3))
   filterby_readcount = nrow(table[table$cloneCount >= 2,])
-  min_CDR3aa = min(nchar(clonotypes_TRA[[i]]$aaSeqCDR3))
   filterby_CDR3aa = nrow(table[nchar(table$aaSeqCDR3) >= 4,])
   filterby_both = nrow(table[table$cloneCount >= 2 & nchar(table$aaSeqCDR3) >= 4,])
-  cbind(sample,TRAclones,filterby_readcount,min_CDR3aa,filterby_CDR3aa,filterby_both)
+  cbind(sample,TRAclones,filterby_readcount,CDR3aa_minlength,filterby_CDR3aa,filterby_both)
   }))
 
 # Filtering and output
@@ -133,11 +133,11 @@ summary_table_TRB <- do.call(rbind, lapply(names(clonotypes_TRB), function(i){
   table = clonotypes_TRB[[i]]
   sample = i
   TRBclones = nrow(table)
+  CDR3aa_minlength = min(nchar(clonotypes_TRB[[i]]$aaSeqCDR3))
   filterby_readcount = nrow(table[table$cloneCount >= 2,])
-  min_CDR3aa = min(nchar(clonotypes_TRB[[i]]$aaSeqCDR3))
   filterby_CDR3aa = nrow(table[nchar(table$aaSeqCDR3) >= 4,])
   filterby_both = nrow(table[table$cloneCount >= 2 & nchar(table$aaSeqCDR3) >= 4,])
-  cbind(sample,TRBclones,filterby_readcount,min_CDR3aa,filterby_CDR3aa,filterby_both)
+  cbind(sample,TRBclones,filterby_readcount,CDR3aa_minlength,filterby_CDR3aa,filterby_both)
   }))
 
 # Filtering and output
@@ -165,7 +165,7 @@ TCR_SE <- do.call(rbind, lapply(clones_TCR_filtered, function(x){
   richness = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 0))
   SE = diversity/richness
   }))
-colnames(TCR_SE) <- "shannon"
+colnames(TCR_SE) <- "Shannon-Evenness"
 ```
 
 ## TRA - SE
@@ -175,7 +175,7 @@ TRA_SE <- do.call(rbind, lapply(clones_TRA_filtered, function(x){
   richness = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 0))
   SE = diversity/richness
   }))
-colnames(TRA_SE) <- "shannon"
+colnames(TRA_SE) <- "Shannon-Evenness"
 ```
 
 ## TRB - SE
@@ -185,17 +185,17 @@ TRB_SE <- do.call(rbind, lapply(clones_TRB_filtered, function(x){
   richness = exp(vegan::renyi(x = x[,"recalculatedcloneFraction"], scales = 0))
   SE = diversity/richness
   }))
-colnames(TRB_SE) <- "shannon"
+colnames(TRB_SE) <- "Shannon-Evenness"
 ```
 
 # Output files
 ```{r, results='hide', warning=FALSE}
 # Summary table
-summary_table_tcr <- cbind(summary_table_tcr, TCR_SE)
+summary_table_TCR <- cbind(summary_table_TCR, TCR_SE)
 summary_table_TRA <- cbind(summary_table_TRA, TRA_SE)
 summary_table_TRB <- cbind(summary_table_TRB, TRB_SE)
 
-write.table(summary_table_tcr, file = file.path(params$outputDir, "02_filtering-evenness_summarytable_TCR.csv"),
+write.table(summary_table_TCR, file = file.path(params$outputDir, "02_filtering-evenness_summarytable_TCR.csv"),
             sep = "\t", row.names = F, col.names = T, quote = F)
 write.table(summary_table_TRA, file = file.path(params$outputDir, "02_filtering-evenness_summarytable_TRA.csv"),
             sep = "\t", row.names = F, col.names = T, quote = F)

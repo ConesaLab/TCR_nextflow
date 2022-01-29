@@ -428,7 +428,7 @@ process report {
                         'inputDir'=getwd(),
                         'chain'='${params.chain}',
                         'specie'='${params.specie}'))"
-    mv _main.html final-report.html
+    mv _main.html final-report_${params.chain}.html
     """
 }
 

@@ -79,8 +79,6 @@ cdrsets <- setNames(lapply(levels, function(i){
               group_cdrs <- unique(do.call(rbind, lapply(group, function(x) x[,"CDR3.aa",drop=F])))
               group_cdrs$CDR3.aa
             }), nm = levels)
-
-save.image(file = "my_work_space.RData")
 ```
 
 
@@ -120,8 +118,10 @@ adj_pval <- matrix(p.adjust(pvalues, method = "fdr"), nrow = nrow(pvalues), ncol
 rownames(adj_pval) <- rownames(pvalues)
 colnames(adj_pval) <- colnames(pvalues)
 adj_pval <- adj_pval[order(rownames(adj_pval)),]
+adj_pval <- cbind(rownames(adj_pval), adj_pval)
+colnames(adj_pval)[1] <- "Disease association"
 
-write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_mcpas_", chain, ".csv")), row.names = T)
+write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_mcpas_", chain, ".csv")), row.names = F)
 ```
 
 
@@ -158,7 +158,9 @@ pvalues = do.call(cbind, lapply(cdrsets, function(cdr3set){
 adj_pval <- matrix(p.adjust(pvalues, method = "fdr"), nrow = nrow(pvalues), ncol = length(levels))
 rownames(adj_pval) <- rownames(pvalues)
 colnames(adj_pval) <- colnames(pvalues)
-adj_pval = adj_pval[order(rownames(adj_pval)),]
+adj_pval <- adj_pval[order(rownames(adj_pval)),]
+adj_pval <- cbind(rownames(adj_pval), adj_pval)
+colnames(adj_pval)[1] <- "Antigen specificity"
 
-write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_vdjdb_", chain, ".csv")), row.names = T)
+write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_vdjdb_", chain, ".csv")), row.names = F)
 ```

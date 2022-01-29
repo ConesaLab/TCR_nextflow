@@ -140,7 +140,7 @@ Here we represent the successfully aligned reads to TCR that mixcr found.
 ```{r}
 # Calculating all TCR reads (TRA+TRB+TRD+TRG)
 alignment_reports <- read.delim("01_alignment_reports.tsv")
-TCR_reads <- alignment_reports[,c("patientID",
+TCR_reads <- alignment_reports[,c("sampleID",
                                   "Total.sequencing.reads",
                                   "TRA.chains",
                                   "TRB.chains",
@@ -149,8 +149,8 @@ TCR_reads <- alignment_reports[,c("patientID",
 TCR_reads$TCRreads <- rowSums(TCR_reads[,3:ncol(TCR_reads)])
 
 # Add one column to SampleInfo
-SampleInfo <- merge(SampleInfo, TCR_reads[,c("patientID", "TCRreads")],
-                    by.x = "SampleID", by.y = "patientID", sort = F)
+SampleInfo <- merge(SampleInfo, TCR_reads[,c("sampleID", "TCRreads")],
+                    by.x = "SampleID", by.y = "sampleID", sort = F)
 
 # Kruskal-Wallis test
 p1_readsTCR <- ggboxplot(SampleInfo,
@@ -174,12 +174,12 @@ p1_readsTCR
 Here we represent the successfully aligned reads to TCA (alpha chain) that mixcr found.
 ```{r}
 # Calculating all TRA reads
-TRA_reads <- alignment_reports[,c("patientID", "TRA.chains")]
+TRA_reads <- alignment_reports[,c("sampleID", "TRA.chains")]
 colnames(TRA_reads)[2] <- "TRAreads"
 
 # Add one column to SampleInfo
-SampleInfo <- merge(SampleInfo, TRA_reads[,c("patientID", "TRAreads")],
-                    by.x = "SampleID", by.y = "patientID", sort = F)
+SampleInfo <- merge(SampleInfo, TRA_reads[,c("sampleID", "TRAreads")],
+                    by.x = "SampleID", by.y = "sampleID", sort = F)
 
 # Kruskal-Wallis test
 p1_readsTRA <- ggboxplot(SampleInfo,
@@ -203,12 +203,12 @@ p1_readsTRA
 Here we represent the successfully aligned reads to TRB (beta chain) that mixcr found.
 ```{r}
 # Calculating all TRB reads
-TRB_reads <- alignment_reports[,c("patientID", "TRB.chains")]
+TRB_reads <- alignment_reports[,c("sampleID", "TRB.chains")]
 colnames(TRB_reads)[2] <- "TRBreads"
 
 # Add one column to SampleInfo
-SampleInfo <- merge(SampleInfo, TRB_reads[,c("patientID", "TRBreads")],
-                    by.x = "SampleID", by.y = "patientID", sort = F)
+SampleInfo <- merge(SampleInfo, TRB_reads[,c("sampleID", "TRBreads")],
+                    by.x = "SampleID", by.y = "sampleID", sort = F)
 
 # Kruskal-Wallis test
 p1_readsTRB <- ggboxplot(SampleInfo,
@@ -256,11 +256,11 @@ Clones from MiXCR assemble report (before filtering).
 This number includes all the BCR+TCR clones that mixcr found.
 ```{r}
 assemble_reports <- read.delim("01_assemble_reports.tsv")
-TCR_clones <- assemble_reports[,c("patientID", "TRA.chains", "TRB.chains", "TRD.chains", "TRG.chains")]
+TCR_clones <- assemble_reports[,c("sampleID", "TRA.chains", "TRB.chains", "TRD.chains", "TRG.chains")]
 TCR_clones$Clones <- rowSums(TCR_clones[,2:ncol(TCR_clones)])
 
-SampleInfo <- merge(SampleInfo, TCR_clones[,c("patientID", "Clones")],
-                    by.x = "SampleID", by.y = "patientID", sort = F)
+SampleInfo <- merge(SampleInfo, TCR_clones[,c("sampleID", "Clones")],
+                    by.x = "SampleID", by.y = "sampleID", sort = F)
 
 # Kruskal-Wallis test
 my_comparisons <- list(c("control", "withoutMHE"),
@@ -383,19 +383,19 @@ dev.off()
 ## Shannon Evenness
 In the filtering step we also calculated Shannon Evenness as defined in (Greiff et al. Genome medicine, 2015, 7:49).
 
-### TCR shannon
+### TCR Shannon-Evenness
 ```{r}
-summary_table_TCR <- read.delim("02_filtering-evenness_summarytable_TCR.csv")
-summary_table_TCR <- summary_table_TCR[,c("sample", "shannon")]
-summary_table_TCR$shannon <- round(summary_table_TCR$shannon, 4)
-colnames(summary_table_TCR) <- c("sample", "TCRshannon")
+summary_table_TCR <- read.delim("02_filtering-evenness_summarytable_TCR.csv", check.names = FALSE)
+summary_table_TCR <- summary_table_TCR[,c("sample", "Shannon-Evenness")]
+summary_table_TCR$`Shannon-Evenness` <- round(summary_table_TCR$`Shannon-Evenness`, 4)
+colnames(summary_table_TCR) <- c("sample", "TCRshannonevenness")
 
 SampleInfo <- merge(SampleInfo, summary_table_TCR, by.x = "SampleID", by.y = "sample", sort = F)
 
 # Kruskal-Wallis test
 p1_shannon_filtered_TCR <- ggboxplot(SampleInfo,
                                      x = "Group",
-                                     y = "TCRshannon",
+                                     y = "TCRshannonevenness",
                                      fill = "yellow",
                                      add = "jitter") +
                            theme(legend.position = "none",
@@ -407,19 +407,19 @@ p1_shannon_filtered_TCR <- ggboxplot(SampleInfo,
 p1_shannon_filtered_TCR
 ```
 
-### TRA shannon
+### TRA Shannon-Evenness
 ```{r}
-summary_table_TRA <- read.delim("02_filtering-evenness_summarytable_TRA.csv")
-summary_table_TRA <- summary_table_TRA[,c("sample", "shannon")]
-summary_table_TRA$shannon <- round(summary_table_TRA$shannon, 4)
-colnames(summary_table_TRA) <- c("sample", "TRAshannon")
+summary_table_TRA <- read.delim("02_filtering-evenness_summarytable_TRA.csv", check.names = FALSE)
+summary_table_TRA <- summary_table_TRA[,c("sample", "Shannon-Evenness")]
+summary_table_TRA$`Shannon-Evenness` <- round(summary_table_TRA$`Shannon-Evenness`, 4)
+colnames(summary_table_TRA) <- c("sample", "TRAshannonevenness")
 
 SampleInfo <- merge(SampleInfo, summary_table_TRA, by.x = "SampleID", by.y = "sample", sort = F)
 
 # Kruskal-Wallis test
 p1_shannon_filtered_TRA <- ggboxplot(SampleInfo,
                                      x = "Group",
-                                     y = "TRAshannon",
+                                     y = "TRAshannonevenness",
                                      fill = "yellow",
                                      add = "jitter") +
                            theme(legend.position = "none",
@@ -431,19 +431,19 @@ p1_shannon_filtered_TRA <- ggboxplot(SampleInfo,
 p1_shannon_filtered_TRA
 ```
 
-### TRB shannon
+### TRB Shannon-Evenness
 ```{r}
-summary_table_TRB <- read.delim("02_filtering-evenness_summarytable_TRB.csv")
-summary_table_TRB <- summary_table_TRB[,c("sample", "shannon")]
-summary_table_TRB$shannon <- round(summary_table_TRB$shannon, 4)
-colnames(summary_table_TRB) <- c("sample", "TRBshannon")
+summary_table_TRB <- read.delim("02_filtering-evenness_summarytable_TRB.csv", check.names = FALSE)
+summary_table_TRB <- summary_table_TRB[,c("sample", "Shannon-Evenness")]
+summary_table_TRB$`Shannon-Evenness` <- round(summary_table_TRB$`Shannon-Evenness`, 4)
+colnames(summary_table_TRB) <- c("sample", "TRBshannonevenness")
 
 SampleInfo <- merge(SampleInfo, summary_table_TRB, by.x = "SampleID", by.y = "sample", sort = F)
 
 # Kruskal-Wallis test
 p1_shannon_filtered_TRB <- ggboxplot(SampleInfo,
                                      x = "Group",
-                                     y = "TRBshannon",
+                                     y = "TRBshannonevenness",
                                      fill = "yellow",
                                      add = "jitter") +
                            theme(legend.position = "none",
@@ -456,23 +456,23 @@ p1_shannon_filtered_TRB
 ```
 
 ### Final plot
-Final plots of the Shannon eveness in TCR, TRA and TRB clones.
+Final plots of the Shannon Eveness in TCR, TRA and TRB clones.
 ```{r, results='hide'}
 # TCR plot
-save(p1_shannon_filtered_TCR, file = file.path(params$workDir, "03_boxplot5_shannon_TCR.Rda"))
-png(file.path(params$outputDir, "03_boxplot5_shannon_TCR.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_shannon_filtered_TCR, file = file.path(params$workDir, "03_boxplot5_shannonevenness_TCR.Rda"))
+png(file.path(params$outputDir, "03_boxplot5_shannonevenness_TCR.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_shannon_filtered_TCR
 dev.off()
 
 # TRA plot
-save(p1_shannon_filtered_TRA, file = file.path(params$workDir, "03_boxplot5_shannon_TRA.Rda"))
-png(file.path(params$outputDir, "03_boxplot5_shannon_TRA.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_shannon_filtered_TRA, file = file.path(params$workDir, "03_boxplot5_shannonevenness_TRA.Rda"))
+png(file.path(params$outputDir, "03_boxplot5_shannonevenness_TRA.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_shannon_filtered_TRA
 dev.off()
 
 # TRB plot
-save(p1_shannon_filtered_TRB, file = file.path(params$workDir, "03_boxplot5_shannon_TRB.Rda"))
-png(file.path(params$outputDir, "03_boxplot5_shannon_TRB.png"), height = 30, width = 30, units = "cm", res = 300)
+save(p1_shannon_filtered_TRB, file = file.path(params$workDir, "03_boxplot5_shannonevenness_TRB.Rda"))
+png(file.path(params$outputDir, "03_boxplot5_shannonevenness_TRB.png"), height = 30, width = 30, units = "cm", res = 300)
 p1_shannon_filtered_TRB
 dev.off()
 ```
@@ -487,9 +487,9 @@ Columns have been added to the SampleInfo file:
 * TCRclones: total number of assembled TCR clones (TRA+TRB+TRD+TRG)
 * TRAclones: total number of assembled TRA clones
 * TRBclones: total number of assembled TRB clones
-* TCRshannon: Shannon eveness of TCR clones (TRA+TRB+TRD+TRG)
-* TRAshannon: Shannon eveness of TRA clones
-* TRBshannon: Shannon eveness of TRB clones
+* TCRshannonevenness: Shannon eveness of TCR clones (TRA+TRB+TRD+TRG)
+* TRAshannonevenness: Shannon eveness of TRA clones
+* TRBshannonevenness: Shannon eveness of TRB clones
 ```{r}
 write.table(SampleInfo, file = file.path(params$outputDir, "03_datasetoverview.csv"),
             sep = ",", row.names = F, col.names = T, quote = F)
