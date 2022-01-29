@@ -43,15 +43,16 @@ cbPalette <- c("#56B4E9","#CB181D","#000000","#CC79A7","#db6d00","#009E73",
 
 
 # Alignment Report
-```{r}
+```{r, include=FALSE}
 # Alignment files (report00) in SampleInfo order
 files <- list.files(path=params$workDir, pattern="*report00")
 files <- files[order(nchar(SampleInfo$SampleID), SampleInfo$SampleID)]
 
 # Concatenate all repertoire reports in one
-alignment_reports <- setNames(do.call(cbind, lapply(files, read.table, row.names = 1, sep=":",
-                                                   comment.char="=", skip = 6)),
-                              nm = SampleInfo$SampleID)
+dfs <- lapply(files, read.table, row.names = 1, sep=":", comment.char="=", skip = 6)
+dfs2 <- lapply(lapply(dfs, t), as.data.frame)
+alignment_reports <- t(plyr::join_all(dfs = dfs2, type = "full"))
+colnames(alignment_reports) <- SampleInfo$SampleID
 
 # Remove (%) values
 alignment_reports <- apply(alignment_reports, 1, stringr::str_remove, pattern = " [(\\)].+")
@@ -62,7 +63,7 @@ rownames(alignment_reports) <- SampleInfo$SampleID
 
 # Create alignment report table
 alignment_reports <- data.frame(alignment_reports, check.names = F)
-alignment_reports <- cbind(sampleID = rownames(alignment_reports), alignment_reports)
+alignment_reports <- cbind(SampleID = rownames(alignment_reports), alignment_reports)
 
 write.table(alignment_reports, file = file.path(params$outputDir, "01_alignment_reports.tsv"),
             sep = "\t", row.names = F, col.names = T, quote = F)
@@ -73,15 +74,13 @@ write.table(alignment_reports, file = file.path(params$outputDir, "01_alignment_
 ```{r}
 # Rmarkdown plot
 df_matrix <- tibble::as_tibble(alignment_reports)
-df_matrix$sampleID <- factor(df_matrix$sampleID, levels=df_matrix$sampleID)
+df_matrix$SampleID <- factor(df_matrix$SampleID, levels=df_matrix$SampleID)
 
-df_gather_chains <- tidyr::gather(data = df_matrix[,c("sampleID","TRA chains","TRB chains",
-                                                      "TRD chains","TRG chains","IGH chains",
-                                                      "IGK chains", "IGL chains")],
+df_gather_chains <- tidyr::gather(data = df_matrix[,c(1, grep("^[A-Z]{3} chains", colnames(df_matrix)))],
                                   key = "parameter", value = "reads", -1)
 df_gather_chains$parameter <- factor(df_gather_chains$parameter,
                                      levels = unique(df_gather_chains$parameter))
-colnames(df_gather_chains)[1] <- "sampleID"
+colnames(df_gather_chains)[1] <- "SampleID"
 
 # color
 cbPalette4chains <- RColorBrewer::brewer.pal(length(unique(df_gather_chains$parameter)), "Set3")
@@ -91,7 +90,7 @@ sample_color <- cbPalette[factor(SampleInfo$Group)]
 alignment_plot <- ggplot(df_gather_chains,
              aes(fill = parameter,
                  y = reads,
-                 x = sampleID)) +
+                 x = SampleID)) +
       geom_bar(position="stack",
                stat="identity") +
       ggtitle("MiXCR alignment report") +
@@ -114,15 +113,16 @@ dev.off()
 
 
 # Assemble report
-```{r}
+```{r, include=FALSE}
 # Assemble files (report04) in SampleInfo order
 files <- list.files(path=params$workDir, pattern="*report04")
 files <- files[order(nchar(SampleInfo$SampleID), SampleInfo$SampleID)]
 
 # Concatenate all repertoire reports in one
-assemble_reports <- setNames(do.call(cbind, lapply(files, read.table, row.names = 1, sep=":",
-                                                  comment.char="=", skip = 7)),
-                             nm = SampleInfo$SampleID)
+dfs <- lapply(files, read.table, row.names = 1, sep=":", comment.char="=", skip = 7)
+dfs2 <- lapply(lapply(dfs, t), as.data.frame)
+assemble_reports <- t(plyr::join_all(dfs = dfs2, type = "full"))
+colnames(assemble_reports) <- SampleInfo$SampleID
 
 # Remove (%) values
 assemble_reports <- apply(assemble_reports, 1, stringr::str_remove, pattern = " [(\\)].+")
@@ -133,7 +133,7 @@ rownames(assemble_reports) <- SampleInfo$SampleID
 
 # Create alignment report table
 assemble_reports <- data.frame(assemble_reports, check.names = F)
-assemble_reports <- cbind(sampleID = rownames(assemble_reports), assemble_reports)
+assemble_reports <- cbind(SampleID = rownames(assemble_reports), assemble_reports)
 
 write.table(assemble_reports, file = file.path(params$outputDir, "01_assemble_reports.tsv"),
             sep = "\t", row.names = F, col.names = T, quote = F)
@@ -143,15 +143,10 @@ write.table(assemble_reports, file = file.path(params$outputDir, "01_assemble_re
 ```{r}
 # Rmarkdown plot
 df_matrix_assemble <- data.frame(assemble_reports, check.names = F)
-df_matrix_assemble[,"sampleID"] <- rownames(df_matrix_assemble)
-df_matrix_assemble <- df_matrix_assemble[c(ncol(df_matrix_assemble),1:ncol(df_matrix_assemble)-1)]
 df_matrix_assemble <- tibble::as_tibble(df_matrix_assemble)
-df_matrix_assemble$sampleID <- factor(df_matrix_assemble$sampleID, levels=df_matrix_assemble$sampleID)
+df_matrix_assemble$SampleID <- factor(df_matrix_assemble$SampleID, levels=df_matrix_assemble$SampleID)
 
-df_gather_chains <- tidyr::gather(data = df_matrix_assemble[,c("sampleID","TRA chains","TRB chains",
-                                                      "TRD chains","TRG chains","IGH chains",
-                                                      "IGK chains", "IGL chains")],
-                                  key = "parameter", value = "reads", -1)
+df_gather_chains <- tidyr::gather(data = df_matrix_assemble[,c(1, grep("^[A-Z]{3} chains", colnames(df_matrix_assemble)))], key = "parameter", value = "reads", -1)
 df_gather_chains$parameter <- factor(df_gather_chains$parameter,
                                      levels = unique(df_gather_chains$parameter))
 # color
@@ -162,7 +157,7 @@ sample_color <- cbPalette[factor(SampleInfo$Group)]
 assemble_plot <- ggplot(df_gather_chains,
              aes(fill = parameter,
                  y = reads,
-                 x = sampleID)) +
+                 x = SampleID)) +
       geom_bar(position="stack",
                stat="identity") +
       ggtitle("MiXCR assemble report") +

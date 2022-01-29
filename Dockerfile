@@ -21,6 +21,7 @@ ARG R_DEPS="c( \
     'immunarch', \
     'microbiome', \
     'openxlsx', \
+    'plyr', \
     'purrr', \
     'RcmdrMisc', \
     'RColorBrewer', \
