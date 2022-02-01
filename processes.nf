@@ -59,7 +59,7 @@ process mixcr_qc {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/01_mixcr_qc.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/01_mixcr_qc.Rmd',
     params=list(
         'workDir'=here,
         'outputDir'='TCRanalysis_bookdown',
@@ -96,7 +96,7 @@ process data_filtering {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/02_datafiltering.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/02_datafiltering.Rmd',
     params=list(
         'inputDir'=here,
         'workDir'=here,
@@ -136,7 +136,7 @@ process dataset_overview {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/03_dataset_overview.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/03_dataset_overview.Rmd',
     params=list(
         'inputDir1'=here,
         'inputDir2'=here,
@@ -176,7 +176,7 @@ process correlations {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/04_correlations.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/04_correlations.Rmd',
     params=list(
         'inputDir'=here,
         'workDir'=here,
@@ -216,7 +216,7 @@ process overlap {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/05_overlap.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/05_overlap.Rmd',
     params=list(
         'inputDir'=here,
         'workDir'=here,
@@ -256,7 +256,7 @@ process diversity {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/06_diversity.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/06_diversity.Rmd',
     params=list(
         'inputDir'=here,
         'workDir'=here,
@@ -296,7 +296,7 @@ process kmers {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/07_kmers.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/07_kmers.Rmd',
     params=list(
         'inputDir'=here,
         'workDir'=here,
@@ -336,7 +336,7 @@ process network {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/08_network.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/08_network.Rmd',
     params=list(
         'inputDir'=here,
         'workDir'=here,
@@ -377,7 +377,7 @@ process ddbb {
 
     script:
     """
-    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/data/scripts/09_ddbb.Rmd',
+    Rscript -e "here<-getwd();rmarkdown::render('${projectDir}/scripts/09_ddbb.Rmd',
     params=list(
         'inputDir'=here,
         'workDir'=here,
