@@ -20,6 +20,7 @@ knitr::opts_knit$set(root.dir = params$workDir, echo=TRUE, dev=c('png','pdf'))
 # Packages
 ```{r, message=FALSE}
 library(ggplot2)
+library(plyr)
 library(RColorBrewer)
 library(tibble)
 library(tidyr)

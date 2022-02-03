@@ -87,7 +87,7 @@ workflow {
         .mix(network.out.network_bookdown)
         .mix(ddbb.out.ddbb_bookdown)
         .collect(),
-        file('data/scripts/10_report.Rmd')
+        file('scripts/10_report.Rmd')
     )
 
 }
