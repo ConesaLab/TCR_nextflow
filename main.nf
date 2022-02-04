@@ -49,8 +49,8 @@ workflow {
     samples_channel = sampleInfoChannel
         .splitCsv(header:true)
         .map { row -> tuple (row.SampleID,
-        file(row.R1),
-        file(row.R2))}
+        file(row.R1.trim()),
+        file(row.R2.trim()))}
 
     /*
     * Workflow functions
