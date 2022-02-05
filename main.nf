@@ -12,8 +12,8 @@ log.info """\
 RNASeq - TCR Pipeline
 ===================================
 Project parameters:
-- Project Name          : ${params.pn}
-- Sample List           : ${params.readfiles}
+- Project Name          : ${params.project_name}
+- Sample List           : ${params.readsfile}
 - Specie                : ${params.specie}
 - Selected TCR chain    : ${params.chain}
 - Output Directory      : ${params.outdir}
@@ -31,8 +31,8 @@ workflow {
         exit 1, "`params.specie` must be one of ${valid_species}"
     }
 
-    Channel.fromPath("${params.readfiles}")
-            .ifEmpty { exit 1, "File not foud: ${params.readfiles}" }
+    Channel.fromPath("${params.readsfile}")
+            .ifEmpty { exit 1, "File not foud: ${params.readsfile}" }
             .set { sampleInfoChannel }
 
     Channel.fromPath("${params.mcpas}")
