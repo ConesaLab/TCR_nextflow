@@ -47,7 +47,7 @@ cbPalette <- c("#56B4E9","#CB181D","#000000","#CC79A7","#db6d00","#009E73",
 ```{r, include=FALSE}
 # Alignment files (report00) in SampleInfo order
 files <- list.files(path=params$workDir, pattern="*report00")
-files <- files[match(SampleInfo$SampleID, gsub(".report00", "", files))]
+files <- files[order(nchar(SampleInfo$SampleID), SampleInfo$SampleID)]
 
 # Concatenate all repertoire reports in one
 dfs <- lapply(files, read.table, row.names = 1, sep=":", comment.char="=", skip = 6)
@@ -117,7 +117,7 @@ dev.off()
 ```{r, include=FALSE}
 # Assemble files (report04) in SampleInfo order
 files <- list.files(path=params$workDir, pattern="*report04")
-files <- files[match(SampleInfo$SampleID, gsub(".report00", "", files))]
+files <- files[order(nchar(SampleInfo$SampleID), SampleInfo$SampleID)]
 
 # Concatenate all repertoire reports in one
 dfs <- lapply(files, read.table, row.names = 1, sep=":", comment.char="=", skip = 7)
