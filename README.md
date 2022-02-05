@@ -36,7 +36,7 @@ T-cell receptor (TCR) analysis is relevant for the study of immune system diseas
 
 The step-by-step pipeline for the processing of immune repertoire data from whole transcriptome RNA-seq reads is summarized in the following figure:
 
-<img src="images/TCRWorkflowpic.png" width="50%" height="50%">
+<img src="images/TCRWorkflowpic.png" width="100%" height="100%">
 
 The pipeline consists of four main steps representing both the experimental procedure and the computational analysis steps: 
 
@@ -94,6 +94,7 @@ Before starting the TCR Workflow analysis, make sure to have installed:
 And one of the following containers depending if you run the workflow locally or in a cluster, respectively:
 - Docker (https://docs.docker.com/get-docker/)
 - Singularity (https://sylabs.io/guides/3.0/user-guide/installation.html)
+
 
 
 Now you are ready to start the TCR analysis!
