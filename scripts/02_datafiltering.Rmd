@@ -41,13 +41,11 @@ Two types of clones are calculated:
 
 ```{r}
 # List input files and keep SampleInfo order
-files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt",
-                    full.names = T)
-files <- files[order(nchar(SampleInfo$SampleID), SampleInfo$SampleID)]
+files <- list.files(path = params$inputDir, pattern="*.clonotypes.ALL.txt")
+files <- files[match(SampleInfo$SampleID, gsub(".clonotypes.ALL.txt", "", files))]
 
 # Create a list of clone tables
-clonotypes_all <- setNames(lapply(files, read.delim), 
-                           nm = SampleInfo$SampleID)
+clonotypes_all <- setNames(lapply(files, read.delim),nm = SampleInfo$SampleID)
 ```
 
 
