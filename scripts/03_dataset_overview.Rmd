@@ -53,7 +53,6 @@ p1_ncell <- ggboxplot(SampleInfo,
                       y = "CellNumber",
                       fill = "cadetblue1",
                       alpha = 0.5,
-                      show.legend = FALSE,
                       add = "jitter") +
             theme(legend.position = "none",
                   text = element_text(size=20)) +
@@ -61,7 +60,8 @@ p1_ncell <- ggboxplot(SampleInfo,
                                method = "wilcox.test",
                                size = 7) +
             stat_compare_means(method = "kruskal",
-                               label.y = 1500000,
+                               label.x.npc = "left",
+                               label.y.npc = "bottom",
                                size = 7)
 
 # plots
@@ -95,7 +95,8 @@ p1_totalRNA <- ggboxplot(SampleInfo,
                                method = "wilcox.test",
                                size = 7) +
             stat_compare_means(method = "kruskal",
-                               label.y = 1300,
+                               label.x.npc = "left",
+                               label.y.npc = "bottom",
                                size = 7)
 
 # plots
@@ -127,9 +128,12 @@ p1_reads <- ggboxplot(SampleInfo,
             theme(legend.position = "none",
                   text = element_text(size=20)) +
             stat_compare_means(comparisons = my_comparisons,
-                               method = "wilcox.test") +
+                               method = "wilcox.test",
+                               size = 7) +
             stat_compare_means(method = "kruskal",
-                               label.y = 77011995)
+                               label.x.npc = "left",
+                               label.y.npc = "bottom",
+                               size = 7)
 
 # plots
 p1_reads
@@ -158,9 +162,12 @@ p1_readsTRA <- ggboxplot(SampleInfo,
                theme(legend.position = "none",
                      text = element_text(size=20)) +
                stat_compare_means(comparisons = my_comparisons,
-                                  method = "wilcox.test") +
+                                  method = "wilcox.test",
+                                  size = 7) +
                stat_compare_means(method = "kruskal",
-                                  label.y = 14000)
+                                  label.x.npc = "left",
+                                  label.y.npc = "bottom",
+                                  size = 7)
 
 # plots
 p1_readsTRA
@@ -187,9 +194,12 @@ p1_readsTRB <- ggboxplot(SampleInfo,
                 theme(legend.position = "none",
                       text = element_text(size=20)) +
                 stat_compare_means(comparisons = my_comparisons,
-                                   method = "wilcox.test") +
+                                   method = "wilcox.test",
+                                   size = 7) +
                 stat_compare_means(method = "kruskal",
-                                   label.y = 30000)
+                                   label.x.npc = "left",
+                                   label.y.npc = "bottom",
+                                   size = 7)
 
 # plots
 p1_readsTRB
@@ -233,9 +243,12 @@ p1_clones_filtered_TRA <- ggboxplot(SampleInfo,
                           theme(legend.position = "none",
                                 text = element_text(size=20)) +
                           stat_compare_means(comparisons = my_comparisons,
-                                             method = "wilcox.test") +
+                                             method = "wilcox.test",
+                                             size = 7) +
                           stat_compare_means(method = "kruskal",
-                                             label.y = 1500)
+                                             label.x.npc = "left",
+                                             label.y.npc = "bottom",
+                                             size = 7)
 p1_clones_filtered_TRA
 ```
 
@@ -257,9 +270,12 @@ p1_clones_filtered_TRB <- ggboxplot(SampleInfo,
                           theme(legend.position = "none",
                                 text = element_text(size=20)) +
                           stat_compare_means(comparisons = my_comparisons,
-                                             method = "wilcox.test") +
+                                             method = "wilcox.test",
+                                             size = 7) +
                           stat_compare_means(method = "kruskal",
-                                             label.y = 1500)
+                                             label.x.npc = "left",
+                                             label.y.npc = "bottom",
+                                             size = 7)
 p1_clones_filtered_TRB
 ```
 
@@ -300,9 +316,12 @@ p1_shannon_filtered_TRA <- ggboxplot(SampleInfo,
                            theme(legend.position = "none",
                                  text = element_text(size=20)) +
                            stat_compare_means(comparisons = my_comparisons,
-                                              method = "wilcox.test") +
+                                              method = "wilcox.test",
+                                              size = 7) +
                            stat_compare_means(method = "kruskal",
-                                              label.y =  1.3)
+                                              label.x.npc = "left",
+                                              label.y.npc = "bottom",
+                                              size = 7)
 p1_shannon_filtered_TRA
 ```
 
@@ -324,9 +343,12 @@ p1_shannon_filtered_TRB <- ggboxplot(SampleInfo,
                            theme(legend.position = "none",
                                  text = element_text(size=20)) +
                            stat_compare_means(comparisons = my_comparisons,
-                                              method = "wilcox.test") +
+                                              method = "wilcox.test",
+                                              size = 7) +
                            stat_compare_means(method = "kruskal",
-                                              label.y = 1.3)
+                                              label.x.npc = "left",
+                                              label.y.npc = "bottom",
+                                              size = 7)
 p1_shannon_filtered_TRB
 ```
 
