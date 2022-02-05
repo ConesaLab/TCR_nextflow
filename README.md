@@ -32,7 +32,7 @@ nextflow run nextflow_main.nf -profile singularity,slurm
 ## Introduction and overview
 T-cell receptor (TCR) analysis is relevant for the study of immune system diseases and it is usually measured with targeted approaches where TCR genes are selectively amplified. However, many non-targeted RNA-seq experiments also contain TCR genes in a fraction of the data, reducing sample requirements and costs. Few studies have shown a step-by-step pipeline for the processing of immune repertoire data from whole transcriptome RNA-seq reads, representing a missed opportunity for complementing gene expression studies of immunological conditions with the analysis of the immune repertoire.
 
-**Here we present a publicly available pipeline for the analysis of TCR repertoire profiles from bulk RNA-seq**. As case study, we use a dataset of CD4 T cells isolated from control patients, cirrhotic patients without and with Minimal Hepatic Encephalopathy (MHE). More information can be found in the paper called _"Case study on CD4 T-cell repertoire reconstruction and analysis from RNA sequencing data in patients with Minimal Hepatic Encephalopathy"_ by Teresa Rubio, Maria Chernigovskaya, Cristina Marti, Paula Izquierdo-Atarejos, Amparo Urios, Carmina Montoliu, Vicente Felipo, Ana Conesa, Victor Greiff and Sonia Tarazona. This repository contains the instruction to reproduce the results of the paper.
+**Here we present a publicly available pipeline for the analysis of TCR repertoire profiles from bulk RNA-seq**. As case study, we use a dataset of CD4 T cells isolated from control patients, cirrhotic patients without and with Minimal Hepatic Encephalopathy (MHE). More information can be found in the paper called _"A Nextflow pipeline for CD4 T-cell repertoire reconstruction and analysis from RNA sequencing data"_ by Teresa Rubio, Maria Chernigovskaya, Susanna Marquez, Cristina Marti, Paula Izquierdo-Atarejos, Amparo Urios, Carmina Montoliu, Vicente Felipo, Ana Conesa, Victor Greiff and Sonia Tarazona. This repository contains the instruction to reproduce the results of the paper.
 
 The step-by-step pipeline for the processing of immune repertoire data from whole transcriptome RNA-seq reads is summarized in the following figure:
 
@@ -80,7 +80,7 @@ The Nextflow pipeline is composed by the files:
 
 One 'readsfile' in .csv format (e.g., _'samplesinfo.csv'_) is required as input containing metadata information. The following columns are mandatory (if any of the required fields are not available, you must provide a vector of zeros):
 
-# <img src="images/samplesinfo.png" width="50%" height="50%">
+<img src="images/samplesinfo.JPG" width="50%" height="50%">
 
 The Nextflow pipeline is able to use RNA-seq data from 2 species ('HomoSapiens' or 'MusMusculus') as input and quantify clonotypes for both TRA (alpha) and TRB (beta) chains of the TCR. You can chose one of the two chains to define the "clones" in your analysis or you also can launch twice the Nextflow pipeline changing the "chain" parameter to obtain both results.
 
