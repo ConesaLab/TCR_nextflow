@@ -9,6 +9,8 @@ params:
   inputDir: !r getwd()
   workDir: !r getwd()
   outputDir: !r getwd()
+  mcpas: !r NULL
+  vdjdb: !r NULL
   sampleInfo: !r NULL
   chain: !r NULL
   specie: !r NULL
@@ -23,8 +25,10 @@ library(openxlsx)
 
 # Work enviroment
 ```{r}
-# Define output directory and TCR chain
+# Define input files, output directory and TCR chain
 sampleInfoFile <- params$sampleInfo
+mcpas <- params$mcpas
+vdjdb <- params$vdjdb
 dir.create(params$outputDir, recursive=T)
 chain <- params$chain
 
@@ -38,7 +42,7 @@ SampleInfo$Group <- factor(SampleInfo$Group, levels = levels)
 The database was last updated on: March 6, 2021. #TRA+TRB ddbb:August 5, 2021.
 Downloaded on: March 12, 2021. #January 21, 2022
 ```{r}
-mcpas_db <- read.csv("McPAS-TCR.csv", stringsAsFactor = FALSE, sep = ",")
+mcpas_db <- read.csv(mcpas, stringsAsFactor = FALSE, sep = ",")
 
 mcpas_db <- mcpas_db[!is.na(mcpas_db$CDR3.beta.aa),]
 # Correcting database typos
@@ -62,7 +66,7 @@ mcpas_db_specie <- subset(mcpas_db_specie, !is.na(Pathology))
 Last updated on 02 February, 2021. #TRA+TRB ddbb: 05 September, 2021
 Downloaded on: March 12, 2021. #January 21, 2022
 ```{r}
-VDJdb <- read.delim("VDJdb-TCR.tsv")
+VDJdb <- read.delim(vdjdb)
 
 vdjdb_specie <- subset(VDJdb, Species == params$specie & nchar(CDR3) > 4)
 vdjdb_specie <- subset(vdjdb_specie, Gene == chain)

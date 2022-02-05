@@ -382,6 +382,8 @@ process ddbb {
         'inputDir'=here,
         'workDir'=here,
         'outputDir'='TCRanalysis_bookdown',
+        'mcpas'='${mcpas}',
+        'vdjdb'='${vdjdb}',
         'sampleInfo'='${sampleInfo}',
         'chain'='${params.chain}',
         'specie'='${params.specie}'),
