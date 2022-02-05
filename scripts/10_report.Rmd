@@ -174,7 +174,7 @@ knitr::kable(table2)
 # {-}
 
 # Methods
-More information about the applied methods can be found in the paper called "*A Nextflow pipeline for CD4 T-cell repertoire reconstruction and analysis from RNA sequencing data*" by T. Rubio, M. Chernigovskaya, C. Marti, P. Izquierdo-Altarejos, A. Urios, C. Montoliu, V. Felipo, A. Conesa, V. Greiff and S. Tarazona. 
+More information about the applied methods can be found in the paper called "*A Nextflow pipeline for CD4 T-cell repertoire reconstruction and analysis from RNA sequencing data*" by T. Rubio, M. Chernigovskaya, S.Marquez, C. Marti, P. Izquierdo-Altarejos, A. Urios, C. Montoliu, V. Felipo, A. Conesa, V. Greiff and S. Tarazona. 
 
 # References
 * R. Amoriello, V. Greiff, A. Aldinucci, E. Bonechi, A. Carnasciali, B. Peruzzi, A.M. Repice, A. Mariottini, R. Saccardi, B. Mazzanti, L. Massacesi, C. Ballerini, *The TCR Repertoire Reconstitution in Multiple Sclerosis: Comparing One-Shot and Continuous Immunosuppressive Therapies*, Front. Immunol. 11 (2020) 559. https://doi.org/10.3389/fimmu.2020.00559.
