@@ -124,8 +124,9 @@ colnames(adj_pval) <- colnames(pvalues)
 adj_pval <- adj_pval[order(rownames(adj_pval)),]
 adj_pval <- cbind(rownames(adj_pval), adj_pval)
 colnames(adj_pval)[1] <- "Disease association"
+adj_pval <- data.frame(adj_pval, check.names = F)
 
-write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_mcpas_", chain, ".csv")), row.names = F)
+write.csv(adj_pval, file = file.path(params$outputDir, paste0("09_ddbb_mcpas_", chain, ".csv")), row.names = F)
 ```
 
 
@@ -165,6 +166,7 @@ colnames(adj_pval) <- colnames(pvalues)
 adj_pval <- adj_pval[order(rownames(adj_pval)),]
 adj_pval <- cbind(rownames(adj_pval), adj_pval)
 colnames(adj_pval)[1] <- "Antigen specificity"
+adj_pval <- data.frame(adj_pval, check.names = F)
 
-write.csv(data.frame(adj_pval), file = file.path(params$outputDir, paste0("09_ddbb_vdjdb_", chain, ".csv")), row.names = F)
+write.csv(adj_pval, file = file.path(params$outputDir, paste0("09_ddbb_vdjdb_", chain, ".csv")), row.names = F)
 ```

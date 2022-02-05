@@ -20,6 +20,10 @@ chain <- params$chain
 # MiXCR quality control {.tabset}
 
 ## Alignment report
+
+* Total sequencing reads: total number of analysed sequencing.
+* Successfully aligned reads: number of successful alignments.
+
 ```{r plot1,include= TRUE,  echo = F, message= F}
 table1 <- read.delim("01_alignment_reports.tsv", check.names = FALSE)
 table1 <- table1[,c("SampleID",	"Total sequencing reads",	"Successfully aligned reads")]
@@ -33,6 +37,10 @@ knitr::include_graphics(path = path.expand("01_alignment_plot.png"))
 ```
 
 ## Assemble report
+
+* Final clonotype count: number of clonotypes after all MiXCR error correction steps.
+* Reads used in clonotypes: sum of all clonotype abundances.
+
 ```{r plot1-3,include= TRUE,  echo = F, message= F}
 table2 <- read.delim("01_assemble_reports.tsv", check.names = FALSE)
 table2 <- table2[,c("SampleID",	"Final clonotype count", "Reads used in clonotypes, percent of total")]
@@ -48,18 +56,22 @@ knitr::include_graphics(path = path.expand("01_assemble_plot.png"))
 # {-}
 
 
-# Clones filtering {.tabset}
+# Clone filtering {.tabset}
 Functional clonotypes (referring to unique sequences of VDJRegion(nt) after excluding out-of-frames and sequences containing stop codons) were only included in the analysis if they had a minimal abundance read of 2 read counts and their CDR3s were of 4 amino acids minimal length as previously described (R. Amoriello et al., 2020).
 
 ## Summary table TRA filtering
 ```{r plot2-2,include= TRUE,  echo = F, message= F}
 table2 <- read.delim("02_filtering-evenness_summarytable_TRA.csv", check.names = FALSE)
+table2 <- table2[,c("sample", "TRAclones", "filterby_both", "Shannon-Evenness")]
+colnames(table2) <- c("SampleID", "Number of TRA clones", "Number of filtered clones", "Shannon-Evenness")
 table2$`Shannon-Evenness` <- round(table2$`Shannon-Evenness`, 3)
 knitr::kable(table2)
 ```
 ## Summary table TRB filtering
 ```{r plot2-3,include= TRUE,  echo = F, message= F}
 table2 <- read.delim("02_filtering-evenness_summarytable_TRB.csv", check.names = FALSE)
+table2 <- table2[,c("sample", "TRBclones", "filterby_both", "Shannon-Evenness")]
+colnames(table2) <- c("SampleID", "Number of TRB clones", "Number of filtered clones", "Shannon-Evenness")
 table2$`Shannon-Evenness` <- round(table2$`Shannon-Evenness`, 3)
 knitr::kable(table2)
 ```
@@ -68,7 +80,7 @@ knitr::kable(table2)
 # {-}
 
 
-# Dataset Overview {.tabset}
+# Dataset overview {.tabset}
 
 ## Number of cells
 The number of cells counted in the cell isolation step.
@@ -78,24 +90,28 @@ knitr::include_graphics(path = path.expand("03_boxplot1_ncell.png"))
 
 ## RNA quantity
 The RNA amount measured in the RNA extraction step.
+
 ```{r plot3-2,include= TRUE,  echo = F, message= F, out.width= "70%", out.height="50%"}
 knitr::include_graphics(path = path.expand("03_boxplot2_rnaquant.png"))
 ```
 
 ## Reads
 The number of successfully aligned reads to ``r params$chain`` by MiXCR.
+
 ```{r plot3-3,include= TRUE,  echo = F, message= F, out.width= "70%", out.height="50%"}
 knitr::include_graphics(path = path.expand(paste0("03_boxplot3_reads_", chain, ".png")))
 ```
 
 ## Clones
 The number of assembled clones by MiXCR after the filtering step.
+
 ```{r plot3-4,include= TRUE,  echo = F, message= F, out.width= "70%", out.height="50%"}
 knitr::include_graphics(path = path.expand(paste0("03_boxplot4_clones_", chain, ".png")))
 ```
 
 ## Shannon Evenness (SE)
 Shannon Evenness (SE) values per repertoire.
+
 ```{r plot3-5,include= TRUE,  echo = F, message= F, out.width= "70%", out.height="50%"}
 knitr::include_graphics(path = path.expand(paste0("03_boxplot5_shannonevenness_", chain, ".png")))
 ```
@@ -105,9 +121,9 @@ knitr::include_graphics(path = path.expand(paste0("03_boxplot5_shannonevenness_"
 
 
 # Correlations
-To examine whether the sequencing depth allowed adequate clonal coverage, we determined the correlation of the number of reads, the number of clones and SE vs. the number of cells and then between reads and clones number, reads number and SE, and clones and SE. Ideally, we expect the number of clones to be independent from the number of reads.
+To examine whether the sequencing depth allowed adequate clonal coverage, we determined the correlation of the number of reads, the number of clones and Shannon Evenness (SE) vs. the number of cells and then between reads and clones number, reads number and SE, and clones and SE. Ideally, we expect the number of clones to be independent from the number of reads.
 
-From here, all the results correspond to the TCR chain selected by the user: ``r params$chain``.
+NOTE: From here, all the results correspond to the TCR chain selected by the user = ``r params$chain``.
 ```{r plot4,include= TRUE,  echo = F, message= F}
 knitr::include_graphics(path = path.expand(paste0("04_correlations_", chain, ".png")))
 ```
@@ -128,7 +144,7 @@ knitr::include_graphics(path = path.expand(paste0("06_diversity_heatmap_", chain
 
 # K-mer analysis (repertoire similarity)
 The adaptive immune response is determined by immune receptor sequences: the higher their dissimilarity, the wider the range of antigens they are able to recognize. The all-to-all sequence similarity within a repertoire represents the repertoire architecture, which was measured in the samples using both k-mers and network analysis.
-Overlapping k-mers of length 3 (k = 3) were extracted from the amino acid CDR3 sequences (R. Amoriello et al., 2020) in each TCR repertoire and condensed into a k-mer frequency distribution. Hierarchical clustering was performed based on euclidean distance for correlations and heatmaps were generated for visualization.
+Overlapping k-mers of length 3 (k = 3) were extracted from the amino acid CDR3 sequences in each TCR repertoire and condensed into a k-mer frequency distribution as previously described in R. Amoriello et al., 2020. Hierarchical clustering was performed based on euclidean distance for correlations and heatmaps were generated for visualization.
 ```{r plot7,include= TRUE,  echo = F, out.width= "70%", out.height="50%", message= F}
 knitr::include_graphics(path = path.expand(paste0("07_kmers_heatmap_", chain, ".png")))
 ```
