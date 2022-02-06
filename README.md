@@ -80,7 +80,7 @@ The Nextflow pipeline is composed by the files:
 
 One 'readsfile' in .csv format (e.g., _'samplesinfo.csv'_) is required as input containing metadata information. The following columns are mandatory (if any of the required fields are not available, you must provide a vector of zeros):
 
-<img src="images/samplesinfo.JPG" width="50%" height="50%">
+<img src="images/samplesinfo.png" width="100%" height="100%">
 
 The Nextflow pipeline is able to use RNA-seq data from 2 species ('HomoSapiens' or 'MusMusculus') as input and quantify clonotypes for both TRA (alpha) and TRB (beta) chains of the TCR. You can chose one of the two chains to define the "clones" in your analysis or you also can launch twice the Nextflow pipeline changing the "chain" parameter to obtain both results.
 
